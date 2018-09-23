@@ -36,5 +36,6 @@
   "repository": "",
   "keywords": [
     "react-component"
-  ]
+  ],
+  "private": true
 }
