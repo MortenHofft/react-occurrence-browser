@@ -20,7 +20,8 @@
     "test:watch": "nwb test-react --server"
   },
   "dependencies": {
-    "axios": "^0.18.0"
+    "axios": "^0.18.0",
+    "lodash": "^4.17.11"
   },
   "peerDependencies": {
     "react": "16.x"
