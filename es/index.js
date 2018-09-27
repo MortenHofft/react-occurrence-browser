@@ -78,7 +78,7 @@ var OccurrenceSearch = function (_Component) {
           React.createElement("input", { placeholder: "Search", value: this.state.value, onChange: this.handleChange, onKeyPress: this.handleKeyPress })
         )
       ),
-      React.createElement(Table, { query: this.state.searchString, endpoint: this.props.endpoint })
+      React.createElement(Table, { query: this.state.searchString, endpoint: this.props.endpoint, config: this.props.config })
     );
   };
 

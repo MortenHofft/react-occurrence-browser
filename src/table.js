@@ -79,6 +79,9 @@ class Table extends Component {
         },
       ]
     };
+    
+    this.fieldConfig = _.get(props, 'config.fieldConfig', this.fieldConfig);
+
     this.state = {
       page: {size: 50, from: 0},
       occurrences: [],

@@ -63,7 +63,7 @@ class OccurrenceSearch extends Component {
             <input placeholder="Search" value={this.state.value} onChange={this.handleChange} onKeyPress={this.handleKeyPress}/>
           </div>
         </div>
-        <Table query={this.state.searchString} endpoint={this.props.endpoint}/>
+        <Table query={this.state.searchString} endpoint={this.props.endpoint} config={this.props.config}/>
       </div>
     );
   }

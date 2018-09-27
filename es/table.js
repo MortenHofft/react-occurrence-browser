@@ -74,6 +74,9 @@ var Table = function (_Component) {
         width: 100
       }]
     };
+
+    _this.fieldConfig = _.get(props, 'config.fieldConfig', _this.fieldConfig);
+
     _this.state = {
       page: { size: 50, from: 0 },
       occurrences: [],
