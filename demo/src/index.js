@@ -4,7 +4,8 @@ import {render} from 'react-dom'
 import OccurrenceBrowser from '../../src'
 
 const style = {
-  height: '900px'
+  height: '900px',
+  width: '90%'
 };
 
 const fieldConfig = {
@@ -20,6 +21,14 @@ const fieldConfig = {
     {
       name: 'basisOfRecord',
       width: 100
+    },
+    {
+      name: 'year',
+      width: 100
+    },
+    {
+      name: 'institutionCode',
+      width: 100
     }
   ]
 };
@@ -32,7 +41,7 @@ class Demo extends Component {
 
   render() {
     return <div>
-      <h1>react-occurrence-browser Demo</h1>
+      <div style={{lineHeight:'20px', padding:'20px', background:'deepskyblue', color: 'white'}}>react-occurrence-browser Demo</div>
       <div style={style}>
         <OccurrenceBrowser endpoint={this.state.endpoint} config={{fieldConfig: fieldConfig}}/>
       </div>

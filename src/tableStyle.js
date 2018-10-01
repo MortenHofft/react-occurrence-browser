@@ -44,17 +44,20 @@ export default {
     "display": "block",
     "z-index": "20",
     "border-bottom": "2px solid #ddd",
-    "color": "#8091a5"
+    "color": "#8091a5",
+    "& tr": {
+      "background": "#f7f9fa"
+    }
   },
   "& th": {
     "transition": "background-color 200ms ease",
     "background": "#f7f9fa"
   },
   "& th, td": {
-    "min-width": "300px",
     "display": "table-cell",
     "text-align": "left",
-    "border-right": "1px solid #eee"
+    "border-right": "1px solid #eee",
+    "wordBreak": "break-word"
   },
   "& .stickyCol th:first-of-type, .stickyCol td:first-of-type": {
     "position": "sticky",
@@ -95,6 +98,7 @@ export default {
   },
   "& th span, td span": {
     "margin": "0 10px",
-    "display": "block"
+    "display": "block",
+    "width": "300px"
   }
 }
