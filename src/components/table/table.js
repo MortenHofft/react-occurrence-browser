@@ -3,6 +3,9 @@ import _ from 'lodash';
 import axios from 'axios';
 import injectSheet from 'react-jss'
 import tableStyle from './tableStyle';
+import defaultFieldConfig from './tableConfig';
+import StateContext from '../../StateContext';
+
 const styles = {
   occurrenceTable: tableStyle
 };
@@ -17,70 +20,8 @@ class Table extends Component {
     this.bodyScroll = this.bodyScroll.bind(this);
     this.handleShow = this.handleShow.bind(this);
     this.handleHide = this.handleHide.bind(this);
-
-    this.fieldConfig = {
-      fields: [
-        {
-          name: 'scientificName',
-          filter: 'taxonKey',
-          width: 200
-        },
-        {
-          name: 'countryCode',
-          width: 100
-        },
-        {
-          name: 'basisOfRecord',
-          width: 100
-        },
-        {
-          name: 'datasetKey',
-          width: 200
-        },
-        {
-          name: 'institutionCode',
-          width: 100
-        },
-        {
-          name: 'year',
-          width: 100
-        },
-        {
-          name: 'kingdom',
-          width: 100
-        },
-        {
-          name: 'phylum',
-          width: 100
-        },
-        {
-          name: 'class',
-          width: 100
-        },
-        {
-          name: 'order',
-          width: 100
-        },
-        {
-          name: 'family',
-          width: 100
-        },
-        {
-          name: 'genus',
-          width: 100
-        },
-        {
-          name: 'species',
-          width: 100
-        },
-        {
-          name: 'gbifID',
-          width: 100
-        },
-      ]
-    };
     
-    this.fieldConfig = _.get(props, 'config.fieldConfig', this.fieldConfig);
+    this.fieldConfig = _.get(props, 'config.fieldConfig', defaultFieldConfig);
 
     this.state = {
       page: {size: 50, from: 0},
@@ -169,8 +110,10 @@ class Table extends Component {
     let stickyCol = this.state.stickyCol ? 'stickyCol' : '';
 
     return (
-      <React.Fragment>
+      <StateContext.Consumer>
+        {({ filter, api }) =>
         <section className={this.props.classes.occurrenceTable}>
+          {JSON.stringify(filter)}
           <div className="tableArea">
             <table id="table" className={scrolled + ' ' + stickyCol} onScroll={ this.bodyScroll }>
               <thead>
@@ -183,8 +126,11 @@ class Table extends Component {
               </tbody>
             </table>
           </div>
+          <button onClick={() => (api.updateFilter({key: 'datasetKey', action: 'ADD', value: '5d26c04c-d269-4e1a-9c54-0fc678fae56a'}))}>update filter</button>
+          <button onClick={() => (api.updateFilter({key: 'datasetKey', action: 'REMOVE', value: '5d26c04c-d269-4e1a-9c54-0fc678fae56a'}))}>remove filter</button>
         </section>
-      </React.Fragment>
+        }
+      </StateContext.Consumer>
     );
   }
 }

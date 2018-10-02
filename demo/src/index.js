@@ -43,7 +43,7 @@ class Demo extends Component {
     return <div>
       <div style={{lineHeight:'20px', padding:'20px', background:'deepskyblue', color: 'white'}}>react-occurrence-browser Demo</div>
       <div style={style}>
-        <OccurrenceBrowser endpoint={this.state.endpoint} config={{fieldConfig: fieldConfig}}/>
+        <OccurrenceBrowser endpoint={this.state.endpoint} config={{mapStateToUrl: true, fieldConfig: fieldConfig}}/>
       </div>
     </div>
   }
