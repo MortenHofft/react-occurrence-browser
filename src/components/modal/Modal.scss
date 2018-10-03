@@ -1,0 +1,50 @@
+// this doesn't seem ideal perhaps find inspiration at https://medium.com/@andrejsabrickis/a-fullscreen-modal-with-fixed-header-footer-and-a-scrollable-content-1656845c8171
+.modal, .modal_backdrop {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transition: opacity 500ms ease-in;
+}
+.modal {
+    z-index: 1000;
+    &_backdrop {
+        background: rgba(0, 0, 0, 0.5);
+        animation: fadein 100ms;
+    }
+    &_contentWrapper {
+        animation: fadein 0.3s;
+        width: 630px;
+        max-width: 100%;
+        position: fixed;
+            top: 50%;
+            left: 50%;
+        transform: translate(-50%, -50%);
+    }
+    &_card {
+        box-shadow: 0 0 15px 10px rgba(0,0,0,.1);
+        background: white;
+        max-height: calc(100% - 100px);
+        animation: slideDown 0.3s;
+        transform: translateY(0%);
+    }
+}
+
+@keyframes fadein {
+    from {
+        opacity:0;
+    }
+    to {
+        opacity:1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-20%);
+    }
+    to {
+        transform: translateY(0%);
+    }
+}

@@ -4,7 +4,7 @@ import {render} from 'react-dom'
 import OccurrenceBrowser from '../../src'
 
 const style = {
-  height: '900px',
+  height: 'calc(100vh - 80px)',
   width: '90%'
 };
 

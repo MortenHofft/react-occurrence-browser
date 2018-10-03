@@ -11,6 +11,9 @@ export default {
     '& *': {
       boxSizing: 'border-box'
     },
+    '& [role="button"]': {
+      cursor: 'pointer'
+    },
     display: 'flex',
     flexDirection: 'column'
   },

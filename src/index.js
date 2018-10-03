@@ -2,12 +2,13 @@ import React, { Component } from "react";
 import _ from "lodash";
 import objectHash from 'object-hash';
 import injectSheet from 'react-jss';
-import Table from './components/table/table';
-import FilterSummary from './components/FilterSummary';
+import Table from './components/table/Table';
+import FilterSummary from './components/filterSummary/FilterSummary';
 import history from './history';
 import StateContext from './StateContext';
 import stateHelper from './stateHelper';
 import configBuilder from './configBuilder';
+import OmniSearch from './components/omniSearch/OmniSearch'
 import styles from './indexStyle';
 
 class OccurrenceSearch extends Component {
@@ -19,8 +20,10 @@ class OccurrenceSearch extends Component {
     this.updateStateQuery = this.updateStateQuery.bind(this);
 
     let appSettings = configBuilder({});
-    console.log(appSettings);
-    let query = {must: {}, must_not: {}};
+    
+    let query = {must: {datasetKey: ['54e9fbce-ed69-49b8-b240-c7450fb449e0', '5d26c04c-d269-4e1a-9c54-0fc678fae56a', 'ffb63b32-306e-415c-87a3-34c60d157a2a'], taxonKey: [1, 2, 3]}, must_not: {}};
+    
+    // Take initial state from url
     if (this.props.config.mapStateToUrl) {
       query = stateHelper.getFilterFromUrl(window.location.search);
       // TODO unlisten on unmount or if prop change
@@ -75,13 +78,9 @@ class OccurrenceSearch extends Component {
     return (
       <StateContext.Provider value={this.state}>
         <div className={this.props.classes.occurrenceSearch}>
-          <div className={this.props.classes.searchBar}>
-            <div>
-              <input placeholder="Search" value={this.state.value} onChange={this.handleChange} onKeyPress={this.handleKeyPress} />
-            </div>
-          </div>
-          <FilterSummary displayName={this.state.appSettings.displayName} filter={this.state.filter} />
-          <Table query={this.state.searchString} endpoint={this.props.endpoint} config={this.props.config} />
+          <OmniSearch filter={this.state.filter} updateFilter={this.state.api.updateFilter} />
+          <FilterSummary displayName={this.state.appSettings.displayName} filter={this.state.filter} updateFilter={this.state.api.updateFilter}/>
+          <Table filter={this.state.filter} endpoint={this.props.endpoint} config={this.props.config} />
         </div>
       </StateContext.Provider>
     );

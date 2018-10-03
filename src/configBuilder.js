@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+import React from 'react';
 import fieldFormatter from './components/fieldFormatter';
 
 export default (config) => {

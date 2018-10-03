@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import _ from 'lodash';
-import axios from 'axios';
-import injectSheet from 'react-jss'
+import injectSheet from 'react-jss';
 import tableStyle from './tableStyle';
 import defaultFieldConfig from './tableConfig';
 import StateContext from '../../StateContext';
+import esRequest from '../../esRequest';
 
 const styles = {
   occurrenceTable: tableStyle
@@ -22,6 +22,7 @@ class Table extends Component {
     this.handleHide = this.handleHide.bind(this);
     
     this.fieldConfig = _.get(props, 'config.fieldConfig', defaultFieldConfig);
+    this.myRef = React.createRef();
 
     this.state = {
       page: {size: 50, from: 0},
@@ -39,7 +40,7 @@ class Table extends Component {
   // }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.query !== this.props.query) {
+    if (prevProps.filter.hash !== this.props.filter.hash) {
       this.updateResults();
     }
   }
@@ -47,17 +48,15 @@ class Table extends Component {
   updateResults() {
     let q = this.props.query || '';
     q = q === '' ? '*' : q;
+    console.log(this.props.filter.query);
     let url = this.props.endpoint + '/_search?size=20&q=' + q;
-    axios.get(url)
+    esRequest.getData(this.props.filter.query, 20, 0)
       .then(
         (response) => {
             let result = response.data;
             let occurrences = _.map(result.hits.hits, '_source');
             this.setState({occurrences: occurrences, count: result.hits.total});
         },
-        // Note: it's important to handle errors here
-        // instead of a catch() block so that we don't swallow
-        // exceptions from actual bugs in components.
         (error) => {
             this.setState({error: true});
         }
@@ -86,7 +85,7 @@ class Table extends Component {
   }
 
   bodyScroll() {
-    this.setState({scrolled: document.getElementById('table').scrollLeft !== 0});
+    this.setState({scrolled: this.myRef.current.scrollLeft !== 0});
   }
 
   handleShow(field) {
@@ -115,7 +114,7 @@ class Table extends Component {
         <section className={this.props.classes.occurrenceTable}>
           {JSON.stringify(filter)}
           <div className="tableArea">
-            <table id="table" className={scrolled + ' ' + stickyCol} onScroll={ this.bodyScroll }>
+            <table className={scrolled + ' ' + stickyCol} onScroll={ this.bodyScroll } ref={this.myRef}>
               <thead>
                 <tr>
                   {headers}
@@ -126,8 +125,6 @@ class Table extends Component {
               </tbody>
             </table>
           </div>
-          <button onClick={() => (api.updateFilter({key: 'datasetKey', action: 'ADD', value: '5d26c04c-d269-4e1a-9c54-0fc678fae56a'}))}>update filter</button>
-          <button onClick={() => (api.updateFilter({key: 'datasetKey', action: 'REMOVE', value: '5d26c04c-d269-4e1a-9c54-0fc678fae56a'}))}>remove filter</button>
         </section>
         }
       </StateContext.Consumer>
