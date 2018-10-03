@@ -25,6 +25,7 @@
     "bluebird": "^3.5.2",
     "bodybuilder": "^2.2.15",
     "history": "^4.7.2",
+    "humanize-num": "^1.1.5",
     "lodash": "^4.17.11",
     "object-hash": "^1.3.0",
     "qs": "^6.5.2",

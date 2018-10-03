@@ -76,11 +76,13 @@ class Table extends Component {
   }
 
   getRow(item) {
+    let props = this.props;
     return this.fieldConfig.fields.map(function(field){
       if (field.name === 'gbifID') {
         return <td key={field.name}><a href={`//gbif.org/occurrence/${item.gbifID}`}><span>{item[field.name]}</span></a></td>;
       }
-      return <td key={field.name}><span>{item[field.name]}</span></td>;
+      let DisplayName = props.displayName(field.name);
+      return <td key={field.name}><span><DisplayName id={item[field.name]} /></span></td>;
     });
   }
 

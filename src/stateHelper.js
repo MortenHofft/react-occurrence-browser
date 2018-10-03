@@ -16,10 +16,9 @@ function getUpdatedFilter(immutableFilter, options) {
     const { key, value, action, isNegated } = options;
     let filter = _.assign({}, immutableFilter);
     if (_.isNil(key) || _.isNil(action)) return filter;
-
     //q is a special case and is treated differently. Perhaps this should have a different method altogether
     if (key === 'q') {
-        filter.q = value;
+        filter.q = action === 'ADD' ? value : undefined;
         return filter;
     }
     const type = isNegated ? 'must_not' : 'must'

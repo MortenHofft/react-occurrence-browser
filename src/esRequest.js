@@ -3,6 +3,7 @@ import _ from 'lodash';
 import axios from 'axios';
 
 function build(query) {
+  query = query || {};
   let builder = bodybuilder();
   _.forOwn(query.must, function(value, field){
       if (field === 'taxonKey') {
@@ -24,7 +25,7 @@ function getData(appQuery, size, from) {
   body.size = size;
   body.from = from;
 
-  return axios.post('//localhost:9200/occurrences2/_search', body);
+  return axios.post('//localhost:9200/fungi/_search', body);
 }
 
 export default {

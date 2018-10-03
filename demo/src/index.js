@@ -15,6 +15,10 @@ const fieldConfig = {
       width: 200
     },
     {
+      name: 'datasetKey',
+      width: 100
+    },
+    {
       name: 'countryCode',
       width: 100
     },
@@ -36,7 +40,7 @@ const fieldConfig = {
 class Demo extends Component {
   constructor(props) {
     super(props);
-    this.state = {endpoint: '//localhost:9200/occurrences2'};
+    this.state = {endpoint: '//localhost:9200/fungi'};
   }
 
   render() {
