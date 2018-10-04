@@ -1,64 +1,142 @@
 export default {
   '@global': {
-    '.searchBar': {
-      border: '1px solid #ddd',
-      position: 'relative',
-      zIndex: '50'
+    '.u-ellipsis': {
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden'
     },
-    '.searchBar input': {
+    '.u-upperCase': {
+      textTransform: 'uppercase'
+    },
+    '.u-secondaryTextColor': {
+      color: '#636d72'
+    },
+    '.u-small': {
+      fontSize: 10,
+      lineHeight: 14
+    },
+    '.u-medium': {
+      fontSize: 12,
+      lineHeight: 16
+    },
+    '.u-semibold': {
+      fontWeight: '600'
+    },
+    '.u-actionTextColor': {
+      color: '#1785fb'
+    },
+    '.filter': {
+      background: 'white',
+      marginBottom: 6,
+      borderRadius: 3
+    },
+    '.filter .material-icons': {
+      fontSize: 18
+    },
+    '.filter__content': {
+      padding: '24px 0'
+    },
+    '.filter__header, .filter__info': {
+      marginRight: 24,
+      marginLeft: 24,
+      marginBottom: 12,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    },
+    '.filter__header h3': {
+      color: '#2e3c43',
+      fontSize: 16,
+      margin: '0',
+      lineHeight: 22,
+      fontWeight: '500'
+    },
+    '.filter__info dd': {
+      marginRight: 24
+    },
+    '.filter__info dt': {
+      marginRight: 5
+    },
+    '.filter__search': {
+      marginTop: 24,
+      border: '1px solid #eee',
+      borderWidth: '1px 0',
+      position: 'relative'
+    },
+    '.filter__search i': {
+      position: 'absolute',
+      right: 24,
+      top: 14
+    },
+    '.filter__search input': {
+      border: '1px solid transparent',
       display: 'block',
       width: '100%',
-      padding: 10,
-      border: 'none'
+      padding: '12px 60px 12px 24px',
+      fontSize: 14,
+      fallbacks: [
+        {
+          border: 'none'
+        }
+      ],
+      borderWidth: '1px 0'
     },
-    '.searchBarSuggest > div > div': {
+    '.filter__search input:focus': {
+      outline: 'none',
+      background: '#fbfbfb',
+      borderBottomColor: 'deepskyblue'
+    },
+    '.filter__actions': {
+      margin: '0px 24px',
       display: 'flex',
-      flexDirection: 'row',
-      borderBottom: '1px solid #e5ebed'
+      justifyContent: 'space-between',
+      alignItems: 'center'
     },
-    '.searchBarSuggest > div > div.disabled': {
-      backgroundColor: '#eee',
-      color: '#8091a5',
-      fontWeight: 'bold'
+    '.filter__actions p, .filter__actions a': {
+      display: 'inline-block'
     },
-    '.searchBarSuggest > div > div.disabled > div': {
-      padding: '12px 18px'
+    '.filter__options ul': {
+      listStyle: 'none',
+      margin: '0',
+      padding: '0'
     },
-    '.searchBarSuggest > div > div > div': {
-      flex: '1 0 50%',
-      padding: 18
-    },
-    '.searchBarSuggest > div > div .fieldName': {
-      background: '#e2e7ea',
-      padding: 5,
-      color: '#8091a5',
-      border: '1px solid #91a3b8',
-      fontWeight: 'bold'
-    },
-    '.searchBarSuggest > div > div .fieldValue': {
-      fontWeight: 'bold'
-    },
-    '.searchBarSuggest > div > div .fieldDescription': {
-      color: '#7e878c'
-    },
-    '.suggestMenu': {
+    '.filter__options input[type="checkbox"]': {
+      display: 'inline-block',
+      width: '0',
+      height: '0',
+      margin: '0',
+      padding: '0',
       position: 'absolute',
-      borderRadius: 3,
-      boxShadow: '0 2px 12px rgba(0, 0, 0, 0.2)',
-      border: '1px solid #ddd',
-      background: 'white',
-      padding: '2px 0',
-      fontSize: '90%',
-      overflow: 'auto',
-      maxHeight: '60vh',
-      width: '100%',
-      zIndex: '998'
+      visibility: 'hidden'
     },
-    '.suggestMenu > div': {
-      padding: '5px 10px'
+    '.filter__facet': {
+      marginRight: 24,
+      marginLeft: 24,
+      padding: '6px 0'
     },
-    '.suggestMenu > div > div:first-of-type': {
-      fontWeight: 'bold'
+    '.filter__facet__title': {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 6
+    },
+    '.disabled .filter__facet__title': {
+      color: '#cbced0'
+    },
+    '.disabled .percentageBar > div': {
+      background: '#dedede'
+    },
+    '.percentageBar': {
+      borderRadius: 2,
+      height: 4,
+      background: '#eee'
+    },
+    '.percentageBar > div': {
+      height: 4,
+      borderRadius: 2,
+      width: '50%',
+      background: '#9de0ad',
+      transition: 'width 0.4s linear'
     }
   }
 };

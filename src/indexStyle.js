@@ -1,5 +1,6 @@
 export default {
   occurrenceSearch: {
+    position: 'relative',
     background: '#f2f6f9',
     height: '100%',
     color: '#2e3c43',

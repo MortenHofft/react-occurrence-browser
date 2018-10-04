@@ -4,12 +4,13 @@ import objectHash from 'object-hash';
 import injectSheet from 'react-jss';
 import Table from './components/table/Table';
 import FilterSummary from './components/filterSummary/FilterSummary';
+import Layout from './components/layout/Layout'
 import history from './history';
 import StateContext from './StateContext';
 import stateHelper from './stateHelper';
 import configBuilder from './configBuilder';
 import OmniSearch from './components/omniSearch/OmniSearch'
-import FacetWidget from './components/widgets/FacetWidget';
+import WidgetDrawer from './components/widgetDrawer/WidgetDrawer';
 import styles from './indexStyle';
 
 class OccurrenceSearch extends Component {
@@ -19,7 +20,6 @@ class OccurrenceSearch extends Component {
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.updateFilter = this.updateFilter.bind(this);
     this.updateStateQuery = this.updateStateQuery.bind(this);
-
 
     this.updateWidgets = this.updateWidgets.bind(this);
     this.hasWidget = this.hasWidget.bind(this);
@@ -107,19 +107,12 @@ class OccurrenceSearch extends Component {
     return (
       <StateContext.Provider value={this.state}>
         <div className={this.props.classes.occurrenceSearch}>
-          <OmniSearch filter={this.state.filter} updateFilter={this.state.api.updateFilter} />
-          <FilterSummary displayName={this.state.appSettings.displayName} filter={this.state.filter} updateFilter={this.state.api.updateFilter}/>
-          <FacetWidget filter={this.state.filter} updateFilter={this.state.api.updateFilter} options={{field: 'datasetKey', displayName: this.state.appSettings.displayName('datasetKey'), showSuggestions: true, autoComplete: {
-              type: 'KEY',
-              endpoint: '//api.gbif.org/v1/dataset/suggest',
-              key: 'key',
-              title: 'title'
-          }}}/>
-          <FacetWidget filter={this.state.filter} updateFilter={this.state.api.updateFilter} options={{field: 'basisOfRecord', displayName: this.state.appSettings.displayName('basisOfRecord'), showSuggestions: true, autoComplete: {
-              type: 'ENUM',
-              endpoint: '//api.gbif.org/v1/enumeration/basic/BasisOfRecord'
-          }}}/>
-          <Table filter={this.state.filter} endpoint={this.props.endpoint} config={this.props.config} displayName={this.state.appSettings.displayName} />
+          <Layout 
+            omniSearch={<OmniSearch filter={this.state.filter} updateFilter={this.state.api.updateFilter} />}
+            filterSummary={<FilterSummary displayName={this.state.appSettings.displayName} filter={this.state.filter} updateFilter={this.state.api.updateFilter} />}
+            widgetDrawer={<WidgetDrawer displayName={this.state.appSettings.displayName} filter={this.state.filter} updateFilter={this.state.api.updateFilter} />}
+            table={<Table filter={this.state.filter} endpoint={this.props.endpoint} config={this.props.config} displayName={this.state.appSettings.displayName} />}
+          />
         </div>
       </StateContext.Provider>
     );

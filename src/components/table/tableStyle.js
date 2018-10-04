@@ -1,6 +1,8 @@
 export default {
   flex: '1 1 100%',
   display: 'flex',
+  height: '100%',
+  maxHeight: '100vh',
   flexDirection: 'column',
   "& .tableArea": {
     flex: '1 1 100%',

@@ -5,13 +5,13 @@ import axios from 'axios';
 function build(query) {
   query = query || {};
   let builder = bodybuilder();
-  _.forOwn(query.must, function(value, field){
-      if (field === 'taxonKey') {
-          field = 'backbone.taxonKey'
-      }
+  _.forOwn(query.must, function (value, field) {
+    if (field === 'taxonKey') {
+      field = 'backbone.taxonKey'
+    }
     builder.filter('terms', field, [].concat(value));
   });
-  _.forOwn(query.must_not, function(value, field){
+  _.forOwn(query.must_not, function (value, field) {
     builder.filter('terms', field, [].concat(value));
   });
   if (_.isString(query.q) && query.q !== '') {
@@ -25,7 +25,7 @@ function getData(appQuery, size, from) {
   body.size = size;
   body.from = from;
 
-  return axios.post('//localhost:9200/fungi/_search', body);
+  return axios.post('//localhost:9200/svampeatlas/_search', body);
 }
 
 export default {

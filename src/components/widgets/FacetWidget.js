@@ -2,11 +2,24 @@ import React, { Component } from 'react';
 import _ from 'lodash';
 import humanize from 'humanize-num'
 import axios from 'axios'
+import injectSheet from 'react-jss';
 
 import Suggest from '../Suggest'
 import StateContext from '../../StateContext';
+import WidgetContainer from './WidgetContainer';
+import WidgetHeader from './WidgetHeader';
+import LoadBar from './LoadBar';
 
 import esRequest from '../../esRequest';
+
+const styles = {
+  widgetSearch: {
+    marginTop: 24,
+    border: '1px solid #eee',
+    borderWidth: '1px 0',
+    position: 'relative'
+  }
+};
 
 function asArray(value) {
   if (_.isUndefined(value)) {
@@ -63,6 +76,9 @@ class FacetWidget extends Component {
     let filter = _.merge({}, this.props.filter.query);
     let query, queryFilter;
     let must = _.get(this.props.filter, 'query.must', {});
+
+    let esField = this.props.options.field;
+
     if (must[this.props.options.field]) {
       //let p1 = fetch('//api.gbif.org/v1/occurrence/search?' + queryString.stringify(filter, { indices: false, allowDots: true }));
 
@@ -71,26 +87,26 @@ class FacetWidget extends Component {
         size: 0,
         aggs: {
           facets: {
-            terms: { field: this.props.options.field, size: 5 } //burde egentlig være 
+            terms: { field: esField, size: 5 } //burde egentlig være 
           }
         }
       };
       query = _.merge(query, queryFilter);
-      let p1 = axios.post('//localhost:9200/fungi/_search', query);
+      let p1 = axios.post('//localhost:9200/svampeatlas/_search', query);
 
       promises.push(p1);
       this.setState({ loading: true });
       p1.then(
-          (result) => {
-            this.setState({ facets: result.data.aggregations.facets.buckets, count: result.data.hits.total });
-          },
-          // Note: it's important to handle errors here
-          // instead of a catch() block so that we don't swallow
-          // exceptions from actual bugs in components.
-          (error) => {
-            this.setState({ error: true });
-          }
-        )
+        (result) => {
+          this.setState({ facets: result.data.aggregations.facets.buckets, count: result.data.hits.total });
+        },
+        // Note: it's important to handle errors here
+        // instead of a catch() block so that we don't swallow
+        // exceptions from actual bugs in components.
+        (error) => {
+          this.setState({ error: true });
+        }
+      )
     }
 
 
@@ -99,30 +115,30 @@ class FacetWidget extends Component {
         delete filter.must[this.props.options.field];
       }
       // let p2 = fetch('//api.gbif.org/v1/occurrence/search?' + queryString.stringify(filter, { indices: false, allowDots: true }));
-      
+
       queryFilter = esRequest.build(filter);
       query = {
         size: 0,
         aggs: {
           facets: {
-            terms: { field: this.props.options.field, size: 5 }
+            terms: { field: esField, size: 5 }
           }
         }
       };
       query = _.merge(query, queryFilter);
-      let p2 = axios.post('//localhost:9200/fungi/_search', query);
+      let p2 = axios.post('//localhost:9200/svampeatlas/_search', query);
 
       p2.then(
-          (result) => {
-            this.setState({ multiFacets: result.data.aggregations.facets.buckets, total: result.data.hits.total });
-          },
-          // Note: it's important to handle errors here
-          // instead of a catch() block so that we don't swallow
-          // exceptions from actual bugs in components.
-          (error) => {
-            this.setState({ error: true });
-          }
-        );
+        (result) => {
+          this.setState({ multiFacets: result.data.aggregations.facets.buckets, total: result.data.hits.total });
+        },
+        // Note: it's important to handle errors here
+        // instead of a catch() block so that we don't swallow
+        // exceptions from actual bugs in components.
+        (error) => {
+          this.setState({ error: true });
+        }
+      );
       promises.push(p2);
     }
 
@@ -149,7 +165,7 @@ class FacetWidget extends Component {
     return (
       <li key={id} className={active ? 'active' : 'disabled'}>
         <label>
-          <input type="checkbox" checked={active} onChange={() => this.props.updateFilter({key: this.props.options.field, value: id, action: action})}/>
+          <input type="checkbox" checked={active} onChange={() => this.props.updateFilter({ key: this.props.options.field, value: id, action: action })} />
           <div className="filter__facet">
             <div className="filter__facet__title">
               <div className="u-ellipsis u-semibold u-medium"><Formater id={id} /></div>
@@ -165,7 +181,7 @@ class FacetWidget extends Component {
   onSelect(val) {
     console.log('selected', val);
     this.setState({ value: '' });
-    this.props.updateFilter({key: this.props.options.field, value: val, action: 'ADD'})
+    this.props.updateFilter({ key: this.props.options.field, value: val, action: 'ADD' })
   }
 
   render() {
@@ -195,8 +211,7 @@ class FacetWidget extends Component {
     let searchBlock = '';
     if (this.state.expanded && this.props.options.search !== false) {
       searchBlock = (
-        <div className="filter__search">
-          <i className="material-icons u-secondaryTextColor">search</i>
+        <div className={this.props.classes.widgetSearch}>
           <Suggest endpoint={this.props.options.autoComplete.endpoint}
             onSelect={this.onSelect} value={this.state.value}
             itemKey={this.props.options.autoComplete.key}
@@ -210,49 +225,46 @@ class FacetWidget extends Component {
     return (
       <StateContext.Consumer>
         {({ api }) =>
-          <div>
-            <div className="filter">
-              {this.state.loading && <div className="loader"></div>}
-              <div className="filter__content">
-                <div className="filter__header">
-                  <h3 className="ellipsis">{this.props.options.field}</h3>
-
+          <WidgetContainer>
+            {this.state.loading && <LoadBar />}
+            <div className="filter__content">
+              <WidgetHeader>
+                {this.props.options.field}
+              </WidgetHeader>
+              {false &&
+                <div className="filter__info">
+                  <dl className="u-secondaryTextColor u-upperCase u-small">
+                    <dt>1.302</dt><dd>Datasets</dd>
+                    <dt>26</dt><dd>in view</dd>
+                  </dl>
                 </div>
-                {false && 
-                  <div className="filter__info">
-                    <dl className="u-secondaryTextColor u-upperCase u-small">
-                      <dt>1.302</dt><dd>Datasets</dd>
-                      <dt>26</dt><dd>in view</dd>
-                    </dl>
-                  </div>
+              }
+              {searchBlock}
+              <div className="filter__actions u-secondaryTextColor u-upperCase u-small">
+                {selectedCount > 0 &&
+                  <p className="u-semibold">{selectedCount} selected</p>
                 }
-                {searchBlock}
-                <div className="filter__actions u-secondaryTextColor u-upperCase u-small">
-                  {selectedCount > 0 &&
-                    <p className="u-semibold">{selectedCount} selected</p>
+                {selectedCount === 0 && this.state.expanded &&
+                  <p>All selected</p>
+                }
+                {selectedCount > 0 &&
+                  <button className="u-actionTextColor" onClick={() => this.props.updateFilter({ key: this.props.options.field, action: 'CLEAR' })}>All</button>
+                }
+              </div>
+              <div className="filter__options">
+                <ul>
+                  {selectedValues}
+                  {this.state.expanded && this.props.options.showSuggestions &&
+                    multiFacets
                   }
-                  {selectedCount === 0 && this.state.expanded &&
-                    <p>All selected</p>
-                  }
-                  {selectedCount > 0 &&
-                    <button className="u-actionTextColor" onClick={() => this.props.updateFilter({key: this.props.options.field, action: 'CLEAR'})}>All</button>
-                  }
-                </div>
-                <div className="filter__options">
-                  <ul>
-                    {selectedValues}
-                    {this.state.expanded && this.props.options.showSuggestions &&
-                      multiFacets
-                    }
-                  </ul>
-                </div>
+                </ul>
               </div>
             </div>
-          </div>
+          </WidgetContainer>
         }
       </StateContext.Consumer>
     );
   }
 }
 
-export default FacetWidget;
+export default injectSheet(styles)(FacetWidget);
