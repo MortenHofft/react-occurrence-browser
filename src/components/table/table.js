@@ -4,7 +4,6 @@ import injectSheet from 'react-jss';
 import tableStyle from './tableStyle';
 import defaultFieldConfig from './tableConfig';
 import StateContext from '../../StateContext';
-import esRequest from '../../esRequest';
 
 const styles = {
   occurrenceTable: tableStyle
@@ -48,9 +47,7 @@ class Table extends Component {
   updateResults() {
     let q = this.props.query || '';
     q = q === '' ? '*' : q;
-    console.log(this.props.filter.query);
-    let url = this.props.endpoint + '/_search?size=20&q=' + q;
-    esRequest.getData(this.props.filter.query, 20, 0)
+    this.props.appSettings.esRequest.getData(this.props.filter.query, 20, 0)
       .then(
         (response) => {
             let result = response.data;
@@ -134,4 +131,11 @@ class Table extends Component {
   }
 }
 
-export default injectSheet(styles)(Table);
+let hocWidget = props => ( <StateContext.Consumer>
+  {({appSettings}) => {
+     return <Table {...props} appSettings={appSettings} />
+  }}
+</StateContext.Consumer>
+);
+
+export default injectSheet(styles)(hocWidget);

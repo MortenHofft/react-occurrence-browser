@@ -1,6 +1,10 @@
 import axios from "axios";
 import React from "react";
 import fieldFormatter from "./components/fieldFormatter";
+import EsRequest from './esRequest';
+
+const esEndpoint = '//localhost:9200/pheidole';
+const esRequest = new EsRequest(esEndpoint);
 
 export default config => {
   let appConfig = {};
@@ -51,6 +55,8 @@ export default config => {
 
   return {
     config: appConfig,
-    displayName: displayName
+    displayName: displayName,
+    esEndpoint: esEndpoint,
+    esRequest: esRequest
   };
 };

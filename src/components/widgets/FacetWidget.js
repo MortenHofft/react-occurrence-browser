@@ -10,8 +10,6 @@ import WidgetContainer from './WidgetContainer';
 import WidgetHeader from './WidgetHeader';
 import LoadBar from './LoadBar';
 
-import esRequest from '../../esRequest';
-
 const styles = {
   widgetSearch: {
     marginTop: 24,
@@ -72,6 +70,8 @@ class FacetWidget extends Component {
   }
 
   updateFacets() {
+    let esEndpoint = this.props.appSettings.esEndpoint;
+
     let promises = [];
     let filter = _.merge({}, this.props.filter.query);
     let query, queryFilter;
@@ -82,7 +82,7 @@ class FacetWidget extends Component {
     if (must[this.props.options.field]) {
       //let p1 = fetch('//api.gbif.org/v1/occurrence/search?' + queryString.stringify(filter, { indices: false, allowDots: true }));
 
-      queryFilter = esRequest.build(this.props.filter.query);
+      queryFilter = this.props.appSettings.esRequest.build(this.props.filter.query);
       query = {
         size: 0,
         aggs: {
@@ -92,7 +92,7 @@ class FacetWidget extends Component {
         }
       };
       query = _.merge(query, queryFilter);
-      let p1 = axios.post('//localhost:9200/svampeatlas/_search', query);
+      let p1 = axios.post(esEndpoint + '/_search', query);
 
       promises.push(p1);
       this.setState({ loading: true });
@@ -116,7 +116,7 @@ class FacetWidget extends Component {
       }
       // let p2 = fetch('//api.gbif.org/v1/occurrence/search?' + queryString.stringify(filter, { indices: false, allowDots: true }));
 
-      queryFilter = esRequest.build(filter);
+      queryFilter = this.props.appSettings.esRequest.build(filter);
       query = {
         size: 0,
         aggs: {
@@ -126,7 +126,7 @@ class FacetWidget extends Component {
         }
       };
       query = _.merge(query, queryFilter);
-      let p2 = axios.post('//localhost:9200/svampeatlas/_search', query);
+      let p2 = axios.post(esEndpoint + '/_search', query);
 
       p2.then(
         (result) => {
@@ -267,4 +267,11 @@ class FacetWidget extends Component {
   }
 }
 
-export default injectSheet(styles)(FacetWidget);
+let hocWidget = props => ( <StateContext.Consumer>
+  {({appSettings}) => {
+     return <FacetWidget {...props} appSettings={appSettings} />
+  }}
+</StateContext.Consumer>
+);
+
+export default injectSheet(styles)(hocWidget);
