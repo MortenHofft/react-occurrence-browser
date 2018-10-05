@@ -10,12 +10,48 @@ import WidgetContainer from './WidgetContainer';
 import WidgetHeader from './WidgetHeader';
 import LoadBar from './LoadBar';
 
+/**
+ * What behaviour do i strive for?
+ * the autocomplete is sort of a headache. it is always unclear how to handle overflows with popups. 
+ * Moving selection and deselction into an apply area, will burden the servers less (than firering a query on every interaction)
+ * paginate facets and search results.
+ * 
+ * If something is selected then those and the top suggestions shows (as currently)
+ * if the user deselects/selects something they need to apply the change.
+ * If the user search for something then use the box itself to show the results. with pagination. Essentially a filtered search. Could be driven of the index to support counts.
+ * 
+ * so searchbar
+ * results - either: facets OR selected(+facets?) OR search results
+ * when clicking/selecting/deselcting results then enter selection mode where there are checkboxes and an apply/cancel button.
+ * paginate result list (both facets, selected and search results)
+ * 
+ * options when creating: add search (only makes sense if many options) Allow negated? page size.
+ * search should always be within what is in the subset of the index. hence ot makes beste sense to try to do it from the index itself.
+ */
 const styles = {
   widgetSearch: {
     marginTop: 24,
     border: '1px solid #eee',
     borderWidth: '1px 0',
-    position: 'relative'
+    position: 'relative',
+    '& input': {
+      border: '1px solid transparent',
+      display: 'block',
+      width: '100%',
+      padding: '12px 60px 12px 24px',
+      fontSize: 14,
+      fallbacks: [
+        {
+          border: 'none'
+        }
+      ],
+      borderWidth: '1px 0'
+    },
+    '& input:focus': {
+      outline: 'none',
+      background: '#fbfbfb',
+      borderBottomColor: 'deepskyblue'
+    },
   }
 };
 
