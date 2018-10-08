@@ -12,10 +12,10 @@ class WidgetDrawer extends Component {
                 key: 'key',
                 title: 'title'
             }}}/>
-            <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} options={{field: 'basisOfRecord', displayName: this.props.displayName('basisOfRecord'), showSuggestions: true, autoComplete: {
+            {/*<FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} options={{field: 'basisOfRecord', displayName: this.props.displayName('basisOfRecord'), showSuggestions: true, autoComplete: {
                 type: 'ENUM',
                 endpoint: '//api.gbif.org/v1/enumeration/basic/BasisOfRecord'
-            }}}/>
+            }}}/>*/}
           </section>
         </div>
     );

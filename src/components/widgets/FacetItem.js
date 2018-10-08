@@ -82,8 +82,9 @@ function FacetItem(props) {
   let progress;
   const count = props.count || 0;
   const total = props.total || props.count;
-  const width = { width: Math.min((100 * count) / total, 100) + "%" };
-
+  const width = total > 0
+    ? { width: Math.min((100 * count) / total, 100) + "%" }
+    : { width: "0%" }
   const progressBarClass = props.active ? classes.percentageBarInner : classes.percentageBarInner_disabled;
   progress = (
     <div className={classes.percentageBar}>

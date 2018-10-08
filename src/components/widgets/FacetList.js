@@ -57,7 +57,7 @@ class FacetList extends Component {
     let listItems = visibleItems.map((x, index) => {
       return (
         <li key={x.id}>
-          <FacetItem value={x.value} count={x.count} total={totalCount} active={x.selected} showCheckbox={showCheckbox} onChange={() => (console.log(index))} />
+          <FacetItem value={x.value} count={x.count} total={totalCount} active={x.selected} showCheckbox={showCheckbox} onChange={() => (this.props.onChange(index, x))} />
         </li>
       );
     });
@@ -66,10 +66,12 @@ class FacetList extends Component {
         <ul className={classes.list}>
           {listItems}
         </ul>
-        {this.state.defaultCap < items.length && <div className={classes.filterInfo}>
+        {this.state.defaultCap < items.length && 
+        <div className={classes.filterInfo}>
           <span></span>
           <span className={classes.filterAction} onClick={() => (this.setState({collapsed: false}))} role="button">More</span>
-        </div>}
+        </div>
+        }
       </div>
     );
   }

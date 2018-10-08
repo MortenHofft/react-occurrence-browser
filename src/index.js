@@ -50,10 +50,6 @@ class OccurrenceSearch extends Component {
     };
   }
 
-
-
-
-
   updateWidgets(field, action) {
     let widgets = [];
     if (action === 'REMOVE') {
@@ -67,9 +63,6 @@ class OccurrenceSearch extends Component {
   hasWidget(field){
     return typeof _.find(this.state.widgets, {field: field}) !== 'undefined';
   }
-
-
-
 
   updateStateQuery(query) {
     this.setState({

@@ -130,7 +130,7 @@ class OmniSearch extends Component {
     } else if(e.keyCode === ESCAPE_KEY) {
       this.setState({forceOpen: false });
     } else if(e.keyCode === ENTER_KEY && e.target.value && e.target.value !== '') {
-      this.props.updateFilter({key: 'q', value: e.target.value, action: 'ADD'});
+      this.props.updateFilter({key: 'freetext', value: e.target.value, action: 'ADD'});
       // this.setState({forceOpen: false, value: '' });
     }
   }

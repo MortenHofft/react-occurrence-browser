@@ -37,9 +37,9 @@ function FilterSummary(props) {
     let must = _.get(props, 'filter.query.must', {});
     let must_not = _.get(props, 'filter.query.must_not', {});
 
-    let q = _.get(props, 'filter.query.q', '');
-    if (q !== '') {
-        filterChips.push(getListItem(displayName, 'q', q, index++, props.updateFilter, false, classes));
+    let freetext = _.get(props, 'filter.query.freetext', '');
+    if (freetext !== '') {
+        filterChips.push(getListItem(displayName, 'freetext', freetext, index++, props.updateFilter, false, classes));
     }
     Object.keys(must).forEach(function (param) {
         must[param].forEach(function (value) {

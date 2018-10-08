@@ -36,6 +36,7 @@ export default getData =>
             this.setState({ title: "unknown", error: true });
           }
         );
+        this.setState({p: dataResult});
       } else {
         // the function simply returned a value.
         this.setState({ title: dataResult });
