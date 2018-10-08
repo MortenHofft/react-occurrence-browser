@@ -16,7 +16,7 @@ function EsRequest(esEndpoint) {
       builder.filter('terms', field, [].concat(value));
     });
     if (_.isString(query.q) && query.q !== '') {
-      builder.query('query_string', 'query', query.q);
+      builder.query('match', 'freetext', query.q);
     }
     return builder.build();
   }

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import _ from 'lodash';
-import humanize from 'humanize-num'
 import axios from 'axios'
 import injectSheet from 'react-jss';
 
@@ -10,6 +9,7 @@ import WidgetContainer from './WidgetContainer';
 import WidgetHeader from './WidgetHeader';
 import LoadBar from './LoadBar';
 import FacetItem from './FacetItem';
+import FacetList from './FacetList';
 
 /**
  * What behaviour do i strive for?
@@ -32,6 +32,11 @@ import FacetItem from './FacetItem';
  * header props: title, menu component; api: actions (collapse e.g.)
  * actions (clear/all) + n selected + apply? + cancel?
  * search + options + pagination/more. 
+ * 
+ * list comp takes a list of options. and which are selected? Allows the user to change selection with callbacks that update the selected list. pagination. all. sorting. pagesize
+ * selction comp: has search, ajax and list. has apply and cancel. defaults to showing top facets.
+ *                can decide to paginate or show all (and reshuffle order)
+ * 
  */
 const styles = {
   widgetSearch: {
@@ -71,7 +76,7 @@ function asArray(value) {
 }
 
 function identity(props) {
-  return <span>{props.id}</span>
+  return <span>TEST: {props.id}</span>
 }
 
 class FacetWidget extends Component {
@@ -162,7 +167,7 @@ class FacetWidget extends Component {
         size: 0,
         aggs: {
           facets: {
-            terms: { field: esField, size: 5 }
+            terms: { field: esField, size: 20 }
           }
         }
       };
@@ -194,27 +199,10 @@ class FacetWidget extends Component {
 
   formatOption(id, count, total, action, active) {
     action = action || 'ADD';
-    let progress;
-    count = count || 0;
-    total = total || count;
-    let width = { width: (100 * count / total) + '%' };
-    progress = (
-      <div className="percentageBar"><div style={width}></div></div>
-    );
-
     let Formater = this.state.displayName;
     return (
-      <li key={id} className={active ? 'active' : 'disabled'}>
-        <label>
-          <input type="checkbox" checked={active} onChange={() => this.props.updateFilter({ key: this.props.options.field, value: id, action: action })} />
-          <div className="filter__facet">
-            <div className="filter__facet__title">
-              <div className="u-ellipsis u-semibold u-medium"><Formater id={id} /></div>
-              {count > 0 && <div className="u-secondaryTextColor u-small">{humanize(count)}</div>}
-            </div>
-            {progress}
-          </div>
-        </label>
+      <li key={id}>
+        <FacetItem value={<Formater id={id} />} count={count} total={total} active={active} showSelectBox={false} selected={false} onChange={() => this.props.updateFilter({ key: this.props.options.field, value: id, action: action })} />
       </li>
     );
   }
@@ -263,6 +251,16 @@ class FacetWidget extends Component {
         </div>
       );
     }
+
+    let Formater = this.state.displayName;
+    let items = asArray(this.state.multiFacets).map(e => {
+      return {
+        id: e.key,
+        count: e.doc_count,
+        value: <Formater id={e.key} />,
+        selected: true
+      };
+    });
     return (
       <StateContext.Consumer>
         {({ api }) =>
@@ -281,7 +279,7 @@ class FacetWidget extends Component {
                 </div>
               }
               {searchBlock}
-              <div className="filter__actions u-secondaryTextColor u-upperCase u-small">
+              {/*<div className="filter__actions u-secondaryTextColor u-upperCase u-small">
                 {selectedCount > 0 &&
                   <p className="u-semibold">{selectedCount} selected</p>
                 }
@@ -291,16 +289,16 @@ class FacetWidget extends Component {
                 {selectedCount > 0 &&
                   <button className="u-actionTextColor" onClick={() => this.props.updateFilter({ key: this.props.options.field, action: 'CLEAR' })}>All</button>
                 }
-              </div>
-              <div className="filter__options">
+              </div>*/}
+              <FacetList showCheckbox={true} totalCount={total} items={items} />
+              {/*<div className="filter__options">
                 <ul>
-                  <FacetItem value="AlgaTerraMovies" count={50000} total={90000} />
                   {selectedValues}
                   {this.state.expanded && this.props.options.showSuggestions &&
                     multiFacets
                   }
                 </ul>
-              </div>
+                </div>*/}
             </div>
           </WidgetContainer>
         }

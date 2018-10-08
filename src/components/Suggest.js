@@ -106,7 +106,6 @@ class Suggest extends Component {
 
     return (
       <ReactAutocomplete
-        open={true}
         wrapperStyle={{ position: 'relative' }}
         renderMenu={children =>
           <div className={classes.list}>
