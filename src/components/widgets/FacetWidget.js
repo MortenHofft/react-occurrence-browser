@@ -9,6 +9,7 @@ import StateContext from '../../StateContext';
 import WidgetContainer from './WidgetContainer';
 import WidgetHeader from './WidgetHeader';
 import LoadBar from './LoadBar';
+import FacetItem from './FacetItem';
 
 /**
  * What behaviour do i strive for?
@@ -27,6 +28,10 @@ import LoadBar from './LoadBar';
  * 
  * options when creating: add search (only makes sense if many options) Allow negated? page size.
  * search should always be within what is in the subset of the index. hence ot makes beste sense to try to do it from the index itself.
+ * 
+ * header props: title, menu component; api: actions (collapse e.g.)
+ * actions (clear/all) + n selected + apply? + cancel?
+ * search + options + pagination/more. 
  */
 const styles = {
   widgetSearch: {
@@ -289,6 +294,7 @@ class FacetWidget extends Component {
               </div>
               <div className="filter__options">
                 <ul>
+                  <FacetItem value="AlgaTerraMovies" count={50000} total={90000} />
                   {selectedValues}
                   {this.state.expanded && this.props.options.showSuggestions &&
                     multiFacets

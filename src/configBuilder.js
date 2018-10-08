@@ -3,7 +3,7 @@ import React from "react";
 import fieldFormatter from "./components/fieldFormatter";
 import EsRequest from './esRequest';
 
-const esEndpoint = '//localhost:9200/pheidole';
+const esEndpoint = '//localhost:9200/fungi';
 const esRequest = new EsRequest(esEndpoint);
 
 export default config => {
