@@ -8,18 +8,21 @@ const styles = {
     height: '100%',
   },
   topBar: {
-    flex: '0 0 auto'
+    flex: '0 0 auto',
+    margin: '10px 10px 0 10px',
   },
   content: {
     flex: '1 1 auto',
     height: '100%',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    margin: 10,
   },
   widgetDrawer: {
     width: 300,
     float: 'right',
     overflow: 'auto',
-    height: '100%'
+    height: '100%',
+    marginLeft: 10
   },
   main: {
     marginRight: 300,

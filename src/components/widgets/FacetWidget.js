@@ -327,7 +327,7 @@ class FacetWidget extends Component {
                   </dl>
                 </div>
               )}
-              <FacetSelector field={this.props.options.field} textField='datasetTitle' displayFormater={this.state.displayName}/>
+              <FacetSelector searchable={this.props.options.search} field={this.props.options.field} textField={this.props.options.displayField} displayFormater={this.state.displayName}/>
               {/*<div className="filter__actions u-secondaryTextColor u-upperCase u-small">
                 {selectedCount > 0 &&
                   <p className="u-semibold">{selectedCount} selected</p>

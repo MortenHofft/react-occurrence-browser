@@ -11,11 +11,13 @@ export default getData =>
     }
 
     componentDidMount() {
+      this._mounted = true;
       this.getTitle();
     }
 
     componentWillUnmount() {
       // Cancel fetch callback?
+      this._mounted = false;
     }
 
     componentDidUpdate(prevProps) {
@@ -30,13 +32,16 @@ export default getData =>
       if (typeof dataResult.then === "function") {
         dataResult.then(
           result => {
-            this.setState({ title: result.title });
+            if (this._mounted) {
+              this.setState({ title: result.title });
+            }
           },
           error => {
-            this.setState({ title: "unknown", error: true });
+            if (this._mounted) {
+              this.setState({ title: "unknown", error: true });
+            }
           }
         );
-        this.setState({p: dataResult});
       } else {
         // the function simply returned a value.
         this.setState({ title: dataResult });
@@ -49,6 +54,9 @@ export default getData =>
       ) : (
         this.state.title
       );
-      return <span>{title}</span>;
+      const style = title
+        ? {}
+        : {display:'inline-block', width: '100px', height: '12px', background: '#f5f5f5'};
+      return <span style={style}>{title} </span>;
     }
   };

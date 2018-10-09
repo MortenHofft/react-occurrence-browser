@@ -21,14 +21,14 @@ function getListItem(displayName, param, value, index, cb, negated) {
     let DisplayName = displayName(param);
     return (
         <li key={index}>
-            <Chip param={param} value={<DisplayName id={value} negated={negated}/>} onClick={() => cb({key: param, value: value, action: 'REMOVE', isNegated: negated})} />
+            <Chip param={param} value={<DisplayName id={value} negated={negated} />} onClick={() => cb({ key: param, value: value, action: 'REMOVE', isNegated: negated })} />
         </li>
     )
 }
 
 function FilterSummary(props) {
-    const {classes} = props;
-    const style = { margin: '0 10px' };
+    const { classes } = props;
+    const style = { margin: '10px 0' };
     let filterChips = [];
     let negatedFilterChips = [];
     let index = 0;
@@ -46,21 +46,26 @@ function FilterSummary(props) {
             filterChips.push(getListItem(displayName, param, value, index++, props.updateFilter, false, classes));
         });
     });
-    
+
     Object.keys(must_not).forEach(function (param) {
         must_not[param].forEach(function (value) {
             negatedFilterChips.push(getListItem(displayName, param, value, index++, props.updateFilter, true, classes));
         });
     });
+    console.log(filterChips.length);
 
     const element = (
-        <div style={style}>
-            <ul className={classes.chips}>
-                {filterChips}
-            </ul>
-            <ul className={classes.chips}>
-                {negatedFilterChips}
-            </ul>
+        <div>
+            {filterChips.length > 0 &&
+            <div style={style}>
+                <ul className={classes.chips}>
+                    {filterChips}
+                </ul>
+                <ul className={classes.chips}>
+                    {negatedFilterChips}
+                </ul>
+            </div>
+            }
         </div>
     );
     return element;

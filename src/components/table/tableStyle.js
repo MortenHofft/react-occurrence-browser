@@ -6,7 +6,6 @@ export default {
   flexDirection: 'column',
   "& .tableArea": {
     flex: '1 1 100%',
-    "margin": "10px",
     "border": "1px solid #ddd",
     "border-radius": "3px",
     "display": "flex",

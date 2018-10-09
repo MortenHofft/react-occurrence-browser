@@ -111,7 +111,6 @@ class Table extends Component {
       <StateContext.Consumer>
         {({ filter, api }) =>
         <section className={this.props.classes.occurrenceTable}>
-          {JSON.stringify(filter)}
           <div className="tableArea">
             <table className={scrolled + ' ' + stickyCol} onScroll={ this.bodyScroll } ref={this.myRef}>
               <thead>

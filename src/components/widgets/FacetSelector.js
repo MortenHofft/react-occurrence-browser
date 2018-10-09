@@ -9,6 +9,7 @@ import FacetList from "./FacetList";
 const styles = {
   search: {
     marginTop: 24,
+    marginBottom: 8,
     border: "1px solid #eee",
     borderWidth: "1px 0",
     position: "relative"
@@ -79,31 +80,29 @@ class FacetSelector extends Component {
   }
 
   componentDidMount() {
-    console.log('mount');
+    this._mounted = true;
     this.updateResults();
   }
 
   componentWillUnmount() {
-    console.log('unmount');
-    this.state.facetPromise.cancel();
+    //this.state.facetPromise.cancel();
+    this._mounted = false;
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.filter.hash !== this.props.filter.hash) {
-      console.log('update component');
       this.state.facetPromise.cancel();
       let fieldFilter = _.get(
         this.props.filter,
-        `must.${this.props.field}`,
+        `query.must.${this.props.field}`,
         []
       );
-      this.setState = { selected: fieldFilter };
-      this.updateResults();
+      this.setState({ value: '', selected: fieldFilter, newSelected: fieldFilter }, this.updateResults);
     }
   }
 
-  updateResults(value) {
-    value = value || this.value;
+  updateResults() {
+    const value = this.state.value;
     //get suggestions based on filter, filterField and search string.
     let esEndpoint = this.props.appSettings.esEndpoint;
     let esRequest = this.props.appSettings.esRequest;
@@ -113,7 +112,11 @@ class FacetSelector extends Component {
 
     let filter = _.merge({}, this.props.filter.query);
     let fieldFilter = this.state.newSelected;
-    filter.must[esField] = fieldFilter;
+    if (fieldFilter && fieldFilter.length !== 0) {
+      _.set(filter, `must[${esField}]`, fieldFilter);
+    } else {
+      _.unset(filter, `must.${esField}`);
+    }
 
     if (value) {
       _.unset(filter, `must.${esField}`);
@@ -141,15 +144,19 @@ class FacetSelector extends Component {
 
     facetPromise.then(
       result => {
-        let results = result.data.aggregations.facets.buckets.map(e => ({
-          count: e.doc_count,
-          value: <DisplayFormater id={e.key} />,
-          id: e.key
-        }));
-        this.setState({results: results, total: result.data.hits.total}, this.getItemsFromResults);
+        if (this._mounted) {
+          let results = result.data.aggregations.facets.buckets.map(e => ({
+            count: e.doc_count,
+            value: <DisplayFormater id={e.key} />,
+            id: e.key
+          }));
+          this.setState({ results: results, total: result.data.hits.total }, this.getItemsFromResults);
+        }
       },
       error => {
-        this.setState({ error: true });
+        if (this._mounted) {
+          this.setState({ error: true });
+        }
         if (axios.isCancel(error)) {
           console.log("Request canceled", error.message); //TODO
         } else {
@@ -157,17 +164,18 @@ class FacetSelector extends Component {
         }
       }
     );
-
-    this.setState({ loading: true, facetPromise: facetPromise });
+    if (this._mounted) {
+      this.setState({ loading: true, facetPromise: facetPromise });
+    }
   }
 
   getItemsFromResults() {
-    let fieldFilter = _.get(this.props.filter.query, `must.${this.props.field}`, []);
+    let fieldFilter = this.state.newSelected;
     let items = this.state.results.map(e => ({
       count: e.count,
       value: e.value,
       id: e.id,
-      selected: fieldFilter.length === 0
+      selected: false
     }));
     if (fieldFilter.length > 0) {
       let itemMap = _.keyBy(items, "id");
@@ -182,8 +190,7 @@ class FacetSelector extends Component {
   }
 
   handleInputChange(event) {
-    this.setState({ value: event.target.value });
-    this.updateResults(event.target.value);
+    this.setState({ value: event.target.value }, this.updateResults);
   }
 
   onKeyDown(event) {
@@ -199,7 +206,11 @@ class FacetSelector extends Component {
     } else {
       newSelected = _.union(this.state.newSelected, [item.id]);
     }
-    this.setState({newSelected: newSelected}, this.getItemsFromResults);
+    if (newSelected.length === 0) {
+      this.setState({ newSelected: newSelected }, this.updateResults);
+    } else {
+      this.setState({ newSelected: newSelected }, this.getItemsFromResults);
+    }
   }
 
   render() {
@@ -208,7 +219,7 @@ class FacetSelector extends Component {
     const isDirty = this.state.selected !== this.state.newSelected;
     return (
       <div>
-        <div className={classes.search}>
+        {this.props.searchable && <div className={classes.search}>
           <input
             type="text"
             placeholder="Search"
@@ -218,12 +229,16 @@ class FacetSelector extends Component {
             onKeyDown={this.onKeyDown}
           />
         </div>
+        }
         <div className={classes.filterInfo}>
-          <span>{this.state.newSelected.length} selected</span>
-          {hasChanged && <span className={classes.filterAction} onClick={() => {this.props.api.updateFilter({key: this.props.field, action: 'UPDATE', value: this.state.newSelected})}} role="button">Apply</span>}
+          {this.state.newSelected.length > 0 && <span>{this.state.newSelected.length} selected</span>}
+          {this.state.newSelected.length === 0 && <span>All selected</span>}
+          {!hasChanged && this.state.newSelected.length > 0 && <span className={classes.filterAction} onClick={() => { this.props.api.updateFilter({ key: this.props.field, action: 'CLEAR' }) }} role="button">Select all</span>}
+          {hasChanged && <span className={classes.filterAction} onClick={() => { this.props.api.updateFilter({ key: this.props.field, action: 'UPDATE', value: this.state.newSelected }) }} role="button">Apply</span>}
         </div>
         <FacetList
           showCheckbox={isDirty}
+          showAllAsSelected={!isDirty && this.state.newSelected.length === 0}
           totalCount={this.state.total || 0}
           items={this.state.items || []}
           onChange={this.handleSelectChange}
@@ -234,7 +249,7 @@ class FacetSelector extends Component {
           </div>
         )}
         {isDirty && <div className={classes.filterInfo}>
-          <span className={classes.filterAction} role="button" onClick={() => {this.setState({value: '', newSelected: this.state.selected}, this.updateResults)}}>Cancel</span>
+          <span className={classes.filterAction} role="button" onClick={() => { this.setState({ value: '', newSelected: this.state.selected }, this.updateResults) }}>Cancel</span>
         </div>}
       </div>
     );

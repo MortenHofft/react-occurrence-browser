@@ -52,12 +52,12 @@ class FacetList extends Component {
   }
 
   render() {
-    const { classes, totalCount, items, showCheckbox } = this.props;
+    const { classes, totalCount, items, showCheckbox, showAllAsSelected } = this.props;
     const visibleItems = this.state.collapsed ? items.slice(0, this.state.defaultCap) : items;
     let listItems = visibleItems.map((x, index) => {
       return (
         <li key={x.id}>
-          <FacetItem value={x.value} count={x.count} total={totalCount} active={x.selected} showCheckbox={showCheckbox} onChange={() => (this.props.onChange(index, x))} />
+          <FacetItem value={x.value} count={x.count} total={totalCount} active={x.selected || showAllAsSelected} showCheckbox={showCheckbox} onChange={() => (this.props.onChange(index, x))} />
         </li>
       );
     });
