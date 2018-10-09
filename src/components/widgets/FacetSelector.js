@@ -140,7 +140,11 @@ class FacetSelector extends Component {
     };
     let queryFilter = queryBuilder.build();
     query = _.merge(query, queryFilter);
-    let facetPromise = axiosCancel.post(esEndpoint + "/_search", query);
+    let facetPromise = axiosCancel.post(esEndpoint + "/_search", query, {
+      headers: {
+        'Content-Type': 'text/plain;charset=UTF-8'
+      }
+    });
 
     facetPromise.then(
       result => {
@@ -170,6 +174,7 @@ class FacetSelector extends Component {
   }
 
   getItemsFromResults() {
+    let DisplayFormater = this.props.displayFormater;
     let fieldFilter = this.state.newSelected;
     let items = this.state.results.map(e => ({
       count: e.count,
@@ -180,7 +185,11 @@ class FacetSelector extends Component {
     if (fieldFilter.length > 0) {
       let itemMap = _.keyBy(items, "id");
       this.state.newSelected.forEach(e => {
-        if (itemMap[e]) itemMap[e].selected = true;
+        if (itemMap[e]) {
+          itemMap[e].selected = true;
+        } else {
+          itemMap[e] = {count: 0, value: <DisplayFormater id={e} />, id: e, selected: true};
+        }
       });
       items = _.values(itemMap);
     }

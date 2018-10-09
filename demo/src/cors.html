@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Add a vector tile source</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js'></script>
+</head>
+<body>
+
+<script>
+  axios.get('http://es1.gbif-dev.org/occurrence_v1/_search?size=20&q=*')
+    .then(x => console.log(x.data));
+</script>
+
+</body>
+</html>

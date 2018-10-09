@@ -33,7 +33,11 @@ function EsRequest(esEndpoint) {
     body.size = size;
     body.from = from;
   
-    return axios.post(esEndpoint + '/_search', body, {'Content-Type' : 'text/plain; charset=UTF-8'});
+    return axios.post(esEndpoint + '/_search', body, {
+      headers: {
+        'Content-Type': 'text/plain;charset=UTF-8'
+      }
+    });
   }
 
   return {

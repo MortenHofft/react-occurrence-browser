@@ -25,7 +25,7 @@ class OccurrenceSearch extends Component {
     this.hasWidget = this.hasWidget.bind(this);
 
 
-    let appSettings = configBuilder({});
+    let appSettings = configBuilder({esEndpoint: this.props.endpoint});
     
     let query = {must: {datasetKey: ['54e9fbce-ed69-49b8-b240-c7450fb449e0', '5d26c04c-d269-4e1a-9c54-0fc678fae56a', 'ffb63b32-306e-415c-87a3-34c60d157a2a'], taxonKey: [1, 2, 3]}, must_not: {}};
     

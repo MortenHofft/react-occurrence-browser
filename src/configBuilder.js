@@ -3,11 +3,9 @@ import React from "react";
 import fieldFormatter from "./components/fieldFormatter";
 import EsRequest from './esRequest';
 
-const esEndpoint = '//localhost:9200/fungi';
-const esRequest = new EsRequest(esEndpoint);
-
 export default config => {
   let appConfig = {};
+  const esRequest = new EsRequest(config.esEndpoint);
 
   appConfig.endpoints = {
     dataset: "//api.gbif.org/v1/dataset",
@@ -56,7 +54,7 @@ export default config => {
   return {
     config: appConfig,
     displayName: displayName,
-    esEndpoint: esEndpoint,
+    esEndpoint: config.esEndpoint,
     esRequest: esRequest
   };
 };
