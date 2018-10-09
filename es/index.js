@@ -5,40 +5,19 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 import React, { Component } from "react";
-import axios from "axios";
 import _ from "lodash";
+import objectHash from 'object-hash';
 import injectSheet from 'react-jss';
-import Table from './table';
-
-var styles = {
-  occurrenceSearch: {
-    background: '#f2f6f9',
-    height: '100%',
-    color: '#2e3c43',
-    fontSize: '14px',
-    boxSizing: 'border-box',
-    fontSmoothing: 'antialiased',
-    fontFamily: 'Open sans, BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif',
-    overflow: 'hidden',
-    '& *': {
-      boxSizing: 'border-box'
-    },
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  searchBar: {
-    border: '1px solid #ddd',
-    position: 'relative',
-    zIndex: '50',
-    margin: '10px',
-    '& input': {
-      padding: '10px',
-      display: 'block',
-      width: '100%',
-      border: 'none'
-    }
-  }
-};
+import Table from './components/table/Table';
+import FilterSummary from './components/filterSummary/FilterSummary';
+import Layout from './components/layout/Layout';
+import history from './history';
+import StateContext from './StateContext';
+import stateHelper from './stateHelper';
+import configBuilder from './configBuilder';
+import OmniSearch from './components/omniSearch/OmniSearch';
+import WidgetDrawer from './components/widgetDrawer/WidgetDrawer';
+import styles from './indexStyle';
 
 var OccurrenceSearch = function (_Component) {
   _inherits(OccurrenceSearch, _Component);
@@ -50,10 +29,62 @@ var OccurrenceSearch = function (_Component) {
 
     _this.handleChange = _this.handleChange.bind(_this);
     _this.handleKeyPress = _this.handleKeyPress.bind(_this);
+    _this.updateFilter = _this.updateFilter.bind(_this);
+    _this.updateStateQuery = _this.updateStateQuery.bind(_this);
 
-    _this.state = { value: '' };
+    _this.updateWidgets = _this.updateWidgets.bind(_this);
+    _this.hasWidget = _this.hasWidget.bind(_this);
+
+    var appSettings = configBuilder({ esEndpoint: _this.props.endpoint });
+
+    var query = { must: { datasetKey: ['54e9fbce-ed69-49b8-b240-c7450fb449e0', '5d26c04c-d269-4e1a-9c54-0fc678fae56a', 'ffb63b32-306e-415c-87a3-34c60d157a2a'], taxonKey: [1, 2, 3] }, must_not: {} };
+
+    // Take initial state from url
+    if (_this.props.config.mapStateToUrl) {
+      query = stateHelper.getFilterFromUrl(window.location.search);
+      // TODO unlisten on unmount or if prop change
+      _this.unlisten = history.listen(function (location, action) {
+        _this.updateStateQuery(stateHelper.getFilterFromUrl(location.search));
+      });
+    }
+
+    _this.state = {
+      value: '',
+      api: {
+        updateFilter: _this.updateFilter,
+        updateWidgets: _this.updateWidgets,
+        hasWidget: _this.hasWidget
+      },
+      appSettings: appSettings,
+      filter: { query: query, hash: objectHash(query) }
+    };
     return _this;
   }
+
+  OccurrenceSearch.prototype.updateWidgets = function updateWidgets(field, action) {
+    var widgets = [];
+    if (action === 'REMOVE') {
+      widgets = _.filter(this.state.widgets, function (item) {
+        return item.field !== field;
+      });
+    } else {
+      widgets = _.uniqBy(this.state.widgets.concat([{ type: 'FILTER', field: field }]), objectHash);
+    }
+    this.setState({ widgets: widgets });
+  };
+
+  OccurrenceSearch.prototype.hasWidget = function hasWidget(field) {
+    return typeof _.find(this.state.widgets, { field: field }) !== 'undefined';
+  };
+
+  OccurrenceSearch.prototype.updateStateQuery = function updateStateQuery(query) {
+    this.setState({
+      filter: {
+        query: query,
+        hash: objectHash(query)
+      }
+    });
+  };
 
   OccurrenceSearch.prototype.handleChange = function handleChange(event) {
     this.setState({ value: event.target.value });
@@ -65,20 +96,33 @@ var OccurrenceSearch = function (_Component) {
     }
   };
 
+  OccurrenceSearch.prototype.updateFilter = function updateFilter(options) {
+    var query = stateHelper.getUpdatedFilter(this.state.filter.query, options);
+    if (this.props.config.mapStateToUrl) {
+      if (stateHelper.isEmptyQuery(query)) {
+        history.push(window.location.pathname);
+      } else {
+        history.push(window.location.pathname + '?filter=' + stateHelper.getFilterAsURICompoment(query));
+      }
+    } else {
+      this.updateStateQuery(query);
+    }
+  };
+
   OccurrenceSearch.prototype.render = function render() {
     return React.createElement(
-      "div",
-      { className: this.props.classes.occurrenceSearch },
+      StateContext.Provider,
+      { value: this.state },
       React.createElement(
         "div",
-        { className: this.props.classes.searchBar },
-        React.createElement(
-          "div",
-          null,
-          React.createElement("input", { placeholder: "Search", value: this.state.value, onChange: this.handleChange, onKeyPress: this.handleKeyPress })
-        )
-      ),
-      React.createElement(Table, { query: this.state.searchString, endpoint: this.props.endpoint, config: this.props.config })
+        { className: this.props.classes.occurrenceSearch },
+        React.createElement(Layout, {
+          omniSearch: React.createElement(OmniSearch, { filter: this.state.filter, updateFilter: this.state.api.updateFilter }),
+          filterSummary: React.createElement(FilterSummary, { displayName: this.state.appSettings.displayName, filter: this.state.filter, updateFilter: this.state.api.updateFilter }),
+          widgetDrawer: React.createElement(WidgetDrawer, { displayName: this.state.appSettings.displayName, filter: this.state.filter, updateFilter: this.state.api.updateFilter }),
+          table: React.createElement(Table, { filter: this.state.filter, endpoint: this.props.endpoint, config: this.props.config, displayName: this.state.appSettings.displayName })
+        })
+      )
     );
   };
 

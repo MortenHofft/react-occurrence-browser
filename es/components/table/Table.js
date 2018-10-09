@@ -1,28 +1,4 @@
-'use strict';
-
-exports.__esModule = true;
-
-var _react = require('react');
-
-var _react2 = _interopRequireDefault(_react);
-
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-var _axios = require('axios');
-
-var _axios2 = _interopRequireDefault(_axios);
-
-var _reactJss = require('react-jss');
-
-var _reactJss2 = _interopRequireDefault(_reactJss);
-
-var _tableStyle = require('./tableStyle');
-
-var _tableStyle2 = _interopRequireDefault(_tableStyle);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -30,8 +6,15 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+import React, { Component } from 'react';
+import _ from 'lodash';
+import injectSheet from 'react-jss';
+import tableStyle from './tableStyle';
+import defaultFieldConfig from './tableConfig';
+import StateContext from '../../StateContext';
+
 var styles = {
-  occurrenceTable: _tableStyle2.default
+  occurrenceTable: tableStyle
 };
 
 var Table = function (_Component) {
@@ -49,54 +32,8 @@ var Table = function (_Component) {
     _this.handleShow = _this.handleShow.bind(_this);
     _this.handleHide = _this.handleHide.bind(_this);
 
-    _this.fieldConfig = {
-      fields: [{
-        name: 'scientificName',
-        filter: 'taxonKey',
-        width: 200
-      }, {
-        name: 'countryCode',
-        width: 100
-      }, {
-        name: 'basisOfRecord',
-        width: 100
-      }, {
-        name: 'datasetKey',
-        width: 200
-      }, {
-        name: 'institutionCode',
-        width: 100
-      }, {
-        name: 'year',
-        width: 100
-      }, {
-        name: 'kingdom',
-        width: 100
-      }, {
-        name: 'phylum',
-        width: 100
-      }, {
-        name: 'class',
-        width: 100
-      }, {
-        name: 'order',
-        width: 100
-      }, {
-        name: 'family',
-        width: 100
-      }, {
-        name: 'genus',
-        width: 100
-      }, {
-        name: 'species',
-        width: 100
-      }, {
-        name: 'gbifID',
-        width: 100
-      }]
-    };
-
-    _this.fieldConfig = _lodash2.default.get(props, 'config.fieldConfig', _this.fieldConfig);
+    _this.fieldConfig = _.get(props, 'config.fieldConfig', defaultFieldConfig);
+    _this.myRef = React.createRef();
 
     _this.state = {
       page: { size: 50, from: 0 },
@@ -115,7 +52,7 @@ var Table = function (_Component) {
   // }
 
   Table.prototype.componentDidUpdate = function componentDidUpdate(prevProps) {
-    if (prevProps.query !== this.props.query) {
+    if (prevProps.filter.hash !== this.props.filter.hash) {
       this.updateResults();
     }
   };
@@ -125,16 +62,11 @@ var Table = function (_Component) {
 
     var q = this.props.query || '';
     q = q === '' ? '*' : q;
-    var url = this.props.endpoint + '/_search?size=20&q=' + q;
-    _axios2.default.get(url).then(function (response) {
+    this.props.appSettings.esRequest.getData(this.props.filter.query, 20, 0).then(function (response) {
       var result = response.data;
-      var occurrences = _lodash2.default.map(result.hits.hits, '_source');
+      var occurrences = _.map(result.hits.hits, '_source');
       _this2.setState({ occurrences: occurrences, count: result.hits.total });
-    },
-    // Note: it's important to handle errors here
-    // instead of a catch() block so that we don't swallow
-    // exceptions from actual bugs in components.
-    function (error) {
+    }, function (error) {
       _this2.setState({ error: true });
     });
   };
@@ -150,15 +82,15 @@ var Table = function (_Component) {
 
     return this.fieldConfig.fields.map(function (field, index) {
       var name = field.filter || field.name;
-      var stickyButton = index === 0 ? _react2.default.createElement(
+      var stickyButton = index === 0 ? React.createElement(
         'i',
         { className: 'material-icons u-secondaryTextColor u-small', onClick: setState },
         icon
       ) : null;
-      return _react2.default.createElement(
+      return React.createElement(
         'th',
         { key: field.name },
-        _react2.default.createElement(
+        React.createElement(
           'span',
           null,
           field.name,
@@ -169,15 +101,16 @@ var Table = function (_Component) {
   };
 
   Table.prototype.getRow = function getRow(item) {
+    var props = this.props;
     return this.fieldConfig.fields.map(function (field) {
       if (field.name === 'gbifID') {
-        return _react2.default.createElement(
+        return React.createElement(
           'td',
           { key: field.name },
-          _react2.default.createElement(
+          React.createElement(
             'a',
             { href: '//gbif.org/occurrence/' + item.gbifID },
-            _react2.default.createElement(
+            React.createElement(
               'span',
               null,
               item[field.name]
@@ -185,20 +118,21 @@ var Table = function (_Component) {
           )
         );
       }
-      return _react2.default.createElement(
+      var DisplayName = props.displayName(field.name);
+      return React.createElement(
         'td',
         { key: field.name },
-        _react2.default.createElement(
+        React.createElement(
           'span',
           null,
-          item[field.name]
+          React.createElement(DisplayName, { id: item[field.name] })
         )
       );
     });
   };
 
   Table.prototype.bodyScroll = function bodyScroll() {
-    this.setState({ scrolled: document.getElementById('table').scrollLeft !== 0 });
+    this.setState({ scrolled: this.myRef.current.scrollLeft !== 0 });
   };
 
   Table.prototype.handleShow = function handleShow(field) {
@@ -210,9 +144,11 @@ var Table = function (_Component) {
   };
 
   Table.prototype.render = function render() {
+    var _this4 = this;
+
     var getRow = this.getRow;
     var tbody = this.state.occurrences.map(function (e, i) {
-      return _react2.default.createElement(
+      return React.createElement(
         'tr',
         { key: i },
         getRow(e)
@@ -223,40 +159,55 @@ var Table = function (_Component) {
     var scrolled = this.state.scrolled ? 'scrolled' : '';
     var stickyCol = this.state.stickyCol ? 'stickyCol' : '';
 
-    return _react2.default.createElement(
-      _react2.default.Fragment,
+    return React.createElement(
+      StateContext.Consumer,
       null,
-      _react2.default.createElement(
-        'section',
-        { className: this.props.classes.occurrenceTable },
-        _react2.default.createElement(
-          'div',
-          { className: 'tableArea' },
-          _react2.default.createElement(
-            'table',
-            { id: 'table', className: scrolled + ' ' + stickyCol, onScroll: this.bodyScroll },
-            _react2.default.createElement(
-              'thead',
-              null,
-              _react2.default.createElement(
-                'tr',
+      function (_ref) {
+        var filter = _ref.filter,
+            api = _ref.api;
+        return React.createElement(
+          'section',
+          { className: _this4.props.classes.occurrenceTable },
+          React.createElement(
+            'div',
+            { className: 'tableArea' },
+            React.createElement(
+              'table',
+              { className: scrolled + ' ' + stickyCol, onScroll: _this4.bodyScroll, ref: _this4.myRef },
+              React.createElement(
+                'thead',
                 null,
-                headers
+                React.createElement(
+                  'tr',
+                  null,
+                  headers
+                )
+              ),
+              React.createElement(
+                'tbody',
+                null,
+                tbody
               )
-            ),
-            _react2.default.createElement(
-              'tbody',
-              null,
-              tbody
             )
           )
-        )
-      )
+        );
+      }
     );
   };
 
   return Table;
-}(_react.Component);
+}(Component);
 
-exports.default = (0, _reactJss2.default)(styles)(Table);
-module.exports = exports['default'];
+var hocWidget = function hocWidget(props) {
+  return React.createElement(
+    StateContext.Consumer,
+    null,
+    function (_ref2) {
+      var appSettings = _ref2.appSettings;
+
+      return React.createElement(Table, _extends({}, props, { appSettings: appSettings }));
+    }
+  );
+};
+
+export default injectSheet(styles)(hocWidget);
