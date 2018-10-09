@@ -9,6 +9,9 @@ import _ from "lodash";
 import objectHash from 'object-hash';
 import injectSheet from 'react-jss';
 import Table from './components/table/Table';
+import Map from './components/map/Map';
+import Gallery from './components/gallery/Gallery';
+import ViewSelector from './components/viewSelector/ViewSelector';
 import FilterSummary from './components/filterSummary/FilterSummary';
 import Layout from './components/layout/Layout';
 import history from './history';
@@ -31,7 +34,7 @@ var OccurrenceSearch = function (_Component) {
     _this.handleKeyPress = _this.handleKeyPress.bind(_this);
     _this.updateFilter = _this.updateFilter.bind(_this);
     _this.updateStateQuery = _this.updateStateQuery.bind(_this);
-
+    _this.updateView = _this.updateView.bind(_this);
     _this.updateWidgets = _this.updateWidgets.bind(_this);
     _this.hasWidget = _this.hasWidget.bind(_this);
 
@@ -50,6 +53,7 @@ var OccurrenceSearch = function (_Component) {
 
     _this.state = {
       value: '',
+      activeView: 'GALLERY',
       api: {
         updateFilter: _this.updateFilter,
         updateWidgets: _this.updateWidgets,
@@ -109,6 +113,10 @@ var OccurrenceSearch = function (_Component) {
     }
   };
 
+  OccurrenceSearch.prototype.updateView = function updateView(selected) {
+    this.setState({ activeView: selected });
+  };
+
   OccurrenceSearch.prototype.render = function render() {
     return React.createElement(
       StateContext.Provider,
@@ -117,10 +125,14 @@ var OccurrenceSearch = function (_Component) {
         "div",
         { className: this.props.classes.occurrenceSearch },
         React.createElement(Layout, {
+          activeView: this.state.activeView,
           omniSearch: React.createElement(OmniSearch, { filter: this.state.filter, updateFilter: this.state.api.updateFilter }),
           filterSummary: React.createElement(FilterSummary, { displayName: this.state.appSettings.displayName, filter: this.state.filter, updateFilter: this.state.api.updateFilter }),
           widgetDrawer: React.createElement(WidgetDrawer, { displayName: this.state.appSettings.displayName, filter: this.state.filter, updateFilter: this.state.api.updateFilter }),
-          table: React.createElement(Table, { filter: this.state.filter, endpoint: this.props.endpoint, config: this.props.config, displayName: this.state.appSettings.displayName })
+          table: React.createElement(Table, { filter: this.state.filter, endpoint: this.props.endpoint, config: this.props.config, displayName: this.state.appSettings.displayName }),
+          map: React.createElement(Map, { filter: this.state.filter, endpoint: this.props.endpoint, config: this.props.config, displayName: this.state.appSettings.displayName }),
+          gallery: React.createElement(Gallery, { filter: this.state.filter, endpoint: this.props.endpoint, config: this.props.config, displayName: this.state.appSettings.displayName }),
+          viewSelector: React.createElement(ViewSelector, { active: this.state.activeView, updateView: this.updateView })
         })
       )
     );

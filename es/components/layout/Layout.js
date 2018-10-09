@@ -11,7 +11,8 @@ var styles = {
   layout: {
     display: 'flex',
     flexDirection: 'column',
-    height: '100%'
+    height: '100%',
+    overflow: 'auto'
   },
   topBar: {
     flex: '0 0 auto',
@@ -33,6 +34,9 @@ var styles = {
   main: {
     marginRight: 300,
     height: '100%'
+  },
+  mainNav: {
+    display: 'flex'
   }
 };
 
@@ -48,6 +52,12 @@ var WidgetDrawer = function (_Component) {
   WidgetDrawer.prototype.render = function render() {
     var classes = this.props.classes;
 
+    var mainContent = this.props.table;
+    if (this.props.activeView === 'MAP') {
+      mainContent = this.props.map;
+    } else if (this.props.activeView === 'GALLERY') {
+      mainContent = this.props.gallery;
+    }
     return React.createElement(
       'div',
       { className: classes.layout },
@@ -56,8 +66,17 @@ var WidgetDrawer = function (_Component) {
         { className: classes.topBar },
         React.createElement(
           'div',
-          null,
-          this.props.omniSearch
+          { className: classes.mainNav },
+          React.createElement(
+            'div',
+            { style: { flex: '1 1 auto', marginRight: 10 } },
+            this.props.omniSearch
+          ),
+          React.createElement(
+            'div',
+            { style: { flex: '0 0 auto' } },
+            this.props.viewSelector
+          )
         ),
         React.createElement(
           'div',
@@ -67,7 +86,7 @@ var WidgetDrawer = function (_Component) {
       ),
       React.createElement(
         'div',
-        { className: classes.content },
+        { className: classes.content, style: this.props.activeView === 'GALLERY' ? { overflow: 'auto' } : {} },
         React.createElement(
           'div',
           { className: classes.widgetDrawer },
@@ -76,7 +95,7 @@ var WidgetDrawer = function (_Component) {
         React.createElement(
           'div',
           { className: classes.main },
-          this.props.table
+          mainContent
         )
       )
     );

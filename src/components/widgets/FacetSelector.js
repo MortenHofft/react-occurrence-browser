@@ -142,7 +142,7 @@ class FacetSelector extends Component {
     query = _.merge(query, queryFilter);
     let facetPromise = axiosCancel.post(esEndpoint + "/_search", query, {
       headers: {
-        'Content-Type': 'text/plain;charset=UTF-8'
+        'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
       }
     });
 

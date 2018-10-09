@@ -3,6 +3,9 @@ import _ from "lodash";
 import objectHash from 'object-hash';
 import injectSheet from 'react-jss';
 import Table from './components/table/Table';
+import Map from './components/map/Map';
+import Gallery from './components/gallery/Gallery';
+import ViewSelector from './components/viewSelector/ViewSelector';
 import FilterSummary from './components/filterSummary/FilterSummary';
 import Layout from './components/layout/Layout'
 import history from './history';
@@ -20,7 +23,7 @@ class OccurrenceSearch extends Component {
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.updateFilter = this.updateFilter.bind(this);
     this.updateStateQuery = this.updateStateQuery.bind(this);
-
+    this.updateView = this.updateView.bind(this);
     this.updateWidgets = this.updateWidgets.bind(this);
     this.hasWidget = this.hasWidget.bind(this);
 
@@ -40,6 +43,7 @@ class OccurrenceSearch extends Component {
 
     this.state = {
       value: '',
+      activeView: 'GALLERY',
       api: {
         updateFilter: this.updateFilter,
         updateWidgets: this.updateWidgets,
@@ -96,15 +100,23 @@ class OccurrenceSearch extends Component {
     }
   }
 
+  updateView(selected) {
+    this.setState({activeView: selected});
+  }
+
   render() {
     return (
       <StateContext.Provider value={this.state}>
         <div className={this.props.classes.occurrenceSearch}>
           <Layout 
+            activeView={this.state.activeView}
             omniSearch={<OmniSearch filter={this.state.filter} updateFilter={this.state.api.updateFilter} />}
             filterSummary={<FilterSummary displayName={this.state.appSettings.displayName} filter={this.state.filter} updateFilter={this.state.api.updateFilter} />}
             widgetDrawer={<WidgetDrawer displayName={this.state.appSettings.displayName} filter={this.state.filter} updateFilter={this.state.api.updateFilter} />}
             table={<Table filter={this.state.filter} endpoint={this.props.endpoint} config={this.props.config} displayName={this.state.appSettings.displayName} />}
+            map={<Map filter={this.state.filter} endpoint={this.props.endpoint} config={this.props.config} displayName={this.state.appSettings.displayName} />}
+            gallery={<Gallery filter={this.state.filter} endpoint={this.props.endpoint} config={this.props.config} displayName={this.state.appSettings.displayName} />}
+            viewSelector={<ViewSelector active={this.state.activeView} updateView={this.updateView}/>}
           />
         </div>
       </StateContext.Provider>

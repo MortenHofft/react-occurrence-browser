@@ -6,6 +6,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
+    overflow: 'auto',
   },
   topBar: {
     flex: '0 0 auto',
@@ -27,24 +28,40 @@ const styles = {
   main: {
     marginRight: 300,
     height: '100%',
+  },
+  mainNav: {
+    display: 'flex'
   }
 };
 
 class WidgetDrawer extends Component {
   render() {
     const {classes} = this.props;
+    let mainContent = this.props.table;
+    if (this.props.activeView === 'MAP') {
+      mainContent = this.props.map;
+    } else if (this.props.activeView === 'GALLERY') {
+      mainContent = this.props.gallery;
+    }
     return (
         <div className={classes.layout}>
           <div className={classes.topBar}>
-            <div>{this.props.omniSearch}</div>
+            <div className={classes.mainNav}>
+              <div style={{flex: '1 1 auto', marginRight: 10}}>
+                {this.props.omniSearch}
+              </div>
+              <div style={{flex: '0 0 auto'}}>
+                {this.props.viewSelector}
+              </div>
+            </div>
             <div>{this.props.filterSummary}</div>
           </div>
-          <div className={classes.content}>
+          <div className={classes.content} style={this.props.activeView === 'GALLERY' ? {overflow: 'auto'} : {}}>
             <div className={classes.widgetDrawer}>
               {this.props.widgetDrawer}
             </div>
             <div className={classes.main}>
-              {this.props.table}
+              {mainContent}
             </div>
           </div>
         </div>

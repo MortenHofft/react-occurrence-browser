@@ -40,7 +40,7 @@ const fieldConfig = {
 class Demo extends Component {
   constructor(props) {
     super(props);
-    this.state = {endpoint: '//es1.gbif-dev.org/fungi'};
+    this.state = {endpoint: '//es1.gbif-dev.org/svampeatlas'};
   }
 
   render() {

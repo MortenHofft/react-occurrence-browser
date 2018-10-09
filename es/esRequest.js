@@ -35,7 +35,7 @@ function EsRequest(esEndpoint) {
 
     return axios.post(esEndpoint + '/_search', body, {
       headers: {
-        'Content-Type': 'text/plain;charset=UTF-8'
+        'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
       }
     });
   }
