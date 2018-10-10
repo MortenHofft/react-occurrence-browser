@@ -116,6 +116,7 @@ var FacetSelector = function (_Component) {
     var esEndpoint = this.props.appSettings.esEndpoint;
     var esRequest = this.props.appSettings.esRequest;
     var esField = this.props.field;
+    var esMappedField = this.props.appSettings.config.fieldMapping[esField] || esField;
     var esTextField = this.props.textField || esField;
     var DisplayFormater = this.props.displayFormater;
 
@@ -130,7 +131,9 @@ var FacetSelector = function (_Component) {
     if (value) {
       _.unset(filter, "must." + esField);
     }
+    console.log(filter);
     var queryBuilder = esRequest.compose(filter);
+    console.log(queryBuilder.build());
     if (value) {
       var pattern = /([\!\*\+\-\=\<\>\&\|\(\)\[\]\{\}\^\~\?\:\\/"])/g;
       var escapedValue = value.replace(pattern, "\\$1");
@@ -143,7 +146,7 @@ var FacetSelector = function (_Component) {
       size: 0,
       aggs: {
         facets: {
-          terms: { field: esField, size: Math.max(15, fieldFilter.length) }
+          terms: { field: esMappedField, size: Math.max(15, fieldFilter.length) }
         }
       }
     };

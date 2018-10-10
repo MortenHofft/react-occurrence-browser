@@ -2,7 +2,7 @@ import bodybuilder from 'bodybuilder';
 import _ from 'lodash';
 import axios from 'axios';
 
-function EsRequest(esEndpoint) {
+function EsRequest(esEndpoint, config) {
   function build(query) {
     return compose(query).build();
   }
@@ -11,9 +11,7 @@ function EsRequest(esEndpoint) {
     query = query || {};
     let builder = bodybuilder();
     _.forOwn(query.must, function (value, field) {
-      if (field === 'taxonKey') {
-        field = 'backbone.taxonKey'
-      }
+      field = config.fieldMapping[field] || field;
       builder.filter('terms', field, [].concat(value));
     });
     _.forOwn(query.must_not, function (value, field) {

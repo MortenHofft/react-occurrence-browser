@@ -13,8 +13,14 @@ import StateContext from "../../StateContext";
 import GalleryImg from "./GalleryImg";
 
 var styles = {
+  paper: {
+    height: '100%',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    background: 'white'
+  },
   imageGallery: {
-    margin: "4px -6px 10px 4px",
+    margin: "4px 4px 10px 4px",
     display: "flex",
     flexWrap: "wrap",
     justifyContent: "flex-start",
@@ -76,11 +82,12 @@ var Gallery = function (_Component) {
 
     return React.createElement(
       "section",
-      null,
+      { className: classes.paper },
       React.createElement(
         "div",
         { className: classes.imageGallery },
-        listItems
+        listItems,
+        React.createElement("div", { className: "imageGallery__more imageGallery__more__filler" })
       )
     );
   };

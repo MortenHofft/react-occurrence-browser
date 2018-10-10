@@ -5,7 +5,6 @@ import EsRequest from './esRequest';
 
 export default config => {
   let appConfig = {};
-  const esRequest = new EsRequest(config.esEndpoint);
 
   appConfig.endpoints = {
     dataset: "//api.gbif.org/v1/dataset",
@@ -32,6 +31,11 @@ export default config => {
     BasisOfRecordTitle: fieldFormatter(id => id.toLowerCase().replace("_", " "))
   };
 
+  appConfig.fieldMapping = {
+    substrate: 'dynamicProperties.Substrate.keyword',
+    taxonKey: 'backbone.taxonKey'
+  };
+
   function Identity(props) {
     return <span>{props.id}</span>;
   }
@@ -50,6 +54,8 @@ export default config => {
         return Identity;
     }
   }
+
+  const esRequest = new EsRequest(config.esEndpoint, appConfig);
 
   return {
     config: appConfig,

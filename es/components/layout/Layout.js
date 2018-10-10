@@ -86,7 +86,7 @@ var WidgetDrawer = function (_Component) {
       ),
       React.createElement(
         'div',
-        { className: classes.content, style: this.props.activeView === 'GALLERY' ? { overflow: 'auto' } : {} },
+        { className: classes.content },
         React.createElement(
           'div',
           { className: classes.widgetDrawer },

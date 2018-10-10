@@ -5,8 +5,14 @@ import StateContext from "../../StateContext";
 import GalleryImg from "./GalleryImg";
 
 const styles = {
+  paper: {
+    height: '100%',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    background: 'white'
+  },
   imageGallery: {
-    margin: "4px -6px 10px 4px",
+    margin: "4px 4px 10px 4px",
     display: "flex",
     flexWrap: "wrap",
     justifyContent: "flex-start",
@@ -61,7 +67,7 @@ class Gallery extends Component {
     });
 
     return (
-      <section>
+      <section className={classes.paper}>
         <div className={classes.imageGallery}>
           {listItems}
           {/* <div
@@ -71,10 +77,7 @@ class Gallery extends Component {
           >
             <span>Load more</span>
           </div> */}
-          {/* <div
-            className="imageGallery__more imageGallery__more__filler"
-            ng-if="occGallery.endOfRecords"
-          /> */}
+          <div className="imageGallery__more imageGallery__more__filler"/>
         </div>
       </section>
     );

@@ -55,6 +55,7 @@ var Map = function (_Component) {
       style: "mapbox://styles/mapbox/light-v9",
       zoom: 0
     });
+    this.map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-left');
     this.map.on("load", this.addLayer);
   };
 

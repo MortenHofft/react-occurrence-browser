@@ -9,6 +9,16 @@ export default {
     fontSmoothing: 'antialiased',
     fontFamily: 'Open sans, BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif',
     overflow: 'hidden',
+    '& ::-webkit-scrollbar': {
+      width: 6,
+      height: 6
+    },
+    '& ::-webkit-scrollbar-track': {
+      background: '#ddd'
+    },
+    '& ::-webkit-scrollbar-thumb': {
+      background: '#888'
+    },
     '& *': {
       boxSizing: 'border-box'
     },

@@ -56,7 +56,7 @@ class WidgetDrawer extends Component {
             </div>
             <div>{this.props.filterSummary}</div>
           </div>
-          <div className={classes.content} style={this.props.activeView === 'GALLERY' ? {overflow: 'auto'} : {}}>
+          <div className={classes.content}>
             <div className={classes.widgetDrawer}>
               {this.props.widgetDrawer}
             </div>

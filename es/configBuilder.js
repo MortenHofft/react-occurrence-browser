@@ -5,7 +5,6 @@ import EsRequest from './esRequest';
 
 export default (function (config) {
   var appConfig = {};
-  var esRequest = new EsRequest(config.esEndpoint);
 
   appConfig.endpoints = {
     dataset: "//api.gbif.org/v1/dataset",
@@ -34,6 +33,11 @@ export default (function (config) {
     })
   };
 
+  appConfig.fieldMapping = {
+    substrate: 'dynamicProperties.Substrate.keyword',
+    taxonKey: 'backbone.taxonKey'
+  };
+
   function Identity(props) {
     return React.createElement(
       "span",
@@ -56,6 +60,8 @@ export default (function (config) {
         return Identity;
     }
   }
+
+  var esRequest = new EsRequest(config.esEndpoint, appConfig);
 
   return {
     config: appConfig,
