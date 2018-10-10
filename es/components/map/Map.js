@@ -82,7 +82,7 @@ var Map = function (_Component) {
   Map.prototype.addLayer = function addLayer() {
     var filter = this.props.filter.query;
     filter = this.props.appSettings.esRequest.build(filter);
-    var tileString = "http:/localhost:5000/api/tile/{x}/{y}/{z}.mvt?field=coordinate_point&url=" + encodeURIComponent("http:" + this.props.appSettings.esEndpoint + "/_search?") + "&filter=" + JSON.stringify(filter.query);
+    var tileString = "https://esmap.gbif-dev.org//api/tile/{x}/{y}/{z}.mvt?field=coordinate_point&url=" + encodeURIComponent("http:" + this.props.appSettings.esEndpoint + "/_search?") + "&filter=" + JSON.stringify(filter.query);
     this.map.addLayer({
       id: "occurrences",
       type: "circle",
