@@ -53,7 +53,8 @@ var Map = function (_Component) {
     this.map = new mapboxgl.Map({
       container: this.myRef.current,
       style: "mapbox://styles/mapbox/light-v9",
-      zoom: 0
+      zoom: 6,
+      center: [11, 56]
     });
     this.map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-left');
     this.map.on("load", this.addLayer);

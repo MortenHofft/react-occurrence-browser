@@ -12,18 +12,19 @@ class WidgetDrawer extends Component {
                 key: 'key',
                 title: 'title'
             }}}/>
-            <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} options={{field: 'issue', displayName: this.props.displayName('issue'), showSuggestions: true, search: false, autoComplete: {
+            <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} options={{field: 'substrate', displayName: this.props.displayName('substrate'), showSuggestions: true, search: false, autoComplete: {
                 type: 'ENUM',
-                endpoint: '//api.gbif.org/v1/enumeration/basic/OccurrenceIssue'
+                endpoint: '//api.gbif.org/v1/enumeration/basic/BasisOfRecord'
             }}}/>
             <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} options={{field: 'basisOfRecord', displayName: this.props.displayName('basisOfRecord'), showSuggestions: true, search: false, autoComplete: {
                 type: 'ENUM',
                 endpoint: '//api.gbif.org/v1/enumeration/basic/BasisOfRecord'
             }}}/>
-            <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} options={{field: 'substrate', displayName: this.props.displayName('substrate'), showSuggestions: true, search: false, autoComplete: {
+            {/* <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} options={{field: 'issue', displayName: this.props.displayName('issue'), showSuggestions: true, search: false, autoComplete: {
                 type: 'ENUM',
-                endpoint: '//api.gbif.org/v1/enumeration/basic/BasisOfRecord'
-            }}}/>
+                endpoint: '//api.gbif.org/v1/enumeration/basic/OccurrenceIssue'
+            }}}/> */}
+            
           </section>
         </div>
     );

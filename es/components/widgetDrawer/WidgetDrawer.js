@@ -29,15 +29,11 @@ var WidgetDrawer = function (_Component) {
                             key: 'key',
                             title: 'title'
                         } } }),
-                React.createElement(FacetWidget, { filter: this.props.filter, updateFilter: this.props.updateFilter, options: { field: 'issue', displayName: this.props.displayName('issue'), showSuggestions: true, search: false, autoComplete: {
-                            type: 'ENUM',
-                            endpoint: '//api.gbif.org/v1/enumeration/basic/OccurrenceIssue'
-                        } } }),
-                React.createElement(FacetWidget, { filter: this.props.filter, updateFilter: this.props.updateFilter, options: { field: 'basisOfRecord', displayName: this.props.displayName('basisOfRecord'), showSuggestions: true, search: false, autoComplete: {
+                React.createElement(FacetWidget, { filter: this.props.filter, updateFilter: this.props.updateFilter, options: { field: 'substrate', displayName: this.props.displayName('substrate'), showSuggestions: true, search: false, autoComplete: {
                             type: 'ENUM',
                             endpoint: '//api.gbif.org/v1/enumeration/basic/BasisOfRecord'
                         } } }),
-                React.createElement(FacetWidget, { filter: this.props.filter, updateFilter: this.props.updateFilter, options: { field: 'substrate', displayName: this.props.displayName('substrate'), showSuggestions: true, search: false, autoComplete: {
+                React.createElement(FacetWidget, { filter: this.props.filter, updateFilter: this.props.updateFilter, options: { field: 'basisOfRecord', displayName: this.props.displayName('basisOfRecord'), showSuggestions: true, search: false, autoComplete: {
                             type: 'ENUM',
                             endpoint: '//api.gbif.org/v1/enumeration/basic/BasisOfRecord'
                         } } })
