@@ -102,6 +102,7 @@ class FacetSelector extends Component {
   }
 
   updateResults() {
+    console.log(this.props.appSettings.widgets.dataset);
     const value = this.state.value;
     //get suggestions based on filter, filterField and search string.
     let esEndpoint = this.props.appSettings.esEndpoint;

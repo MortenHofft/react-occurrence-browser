@@ -10,7 +10,7 @@ import WidgetHeader from "./WidgetHeader";
 import LoadBar from "./LoadBar";
 import FacetItem from "./FacetItem";
 import FacetList from "./FacetList";
-import FacetSelector from "./FacetSelector";
+import FacetOptions from "./FacetOptions";
 
 /**
  * What behaviour do i strive for?
@@ -249,105 +249,14 @@ class FacetWidget extends Component {
   }
 
   render() {
-    let props = this.props;
-    let count = this.state.count;
-    let total = this.state.total;
-    let formatOption = this.formatOption;
-
-    let must = _.get(this.props.filter, "query.must", {});
-    let facets = asArray(this.state.facets);
-    let selectedValues = asArray(must[this.props.options.field]);
-    if (facets.length > 0) {
-      facets = _.keyBy(facets, "key");
-    }
-    selectedValues = selectedValues.map(function(e) {
-      return formatOption(
-        e,
-        _.get(facets, e + ".doc_count"),
-        count,
-        "REMOVE",
-        true
-      );
-    });
-    let multiFacets = asArray(this.state.multiFacets);
-    _.remove(multiFacets, function(e) {
-      return asArray(must[props.options.field]).indexOf(e.key) !== -1;
-    });
-    multiFacets = multiFacets.map(function(e) {
-      return formatOption(
-        e.key,
-        e.doc_count,
-        total,
-        "ADD",
-        selectedValues.length === 0
-      );
-    });
-    let selectedCount = asArray(must[this.props.options.field]).length;
-
-    let searchBlock = "";
-    if (this.state.expanded && this.props.options.search !== false) {
-      searchBlock = (
-        <div className={this.props.classes.widgetSearch}>
-          <Suggest
-            endpoint={this.props.options.autoComplete.endpoint}
-            onSelect={this.onSelect}
-            value={this.state.value}
-            itemKey={this.props.options.autoComplete.key}
-            itemTitle={this.props.options.autoComplete.title}
-            itemDescription={this.props.options.autoComplete.description}
-            renderItem={this.props.options.autoComplete.renderItem}
-          />
-        </div>
-      );
-    }
-
-    let Formater = this.state.displayName;
-    let items = asArray(this.state.multiFacets).map(e => {
-      return {
-        id: e.key,
-        count: e.doc_count,
-        value: <Formater id={e.key} />,
-        selected: true
-      };
-    });
     return (
       <StateContext.Consumer>
         {({ api }) => (
           <WidgetContainer>
             {this.state.loading && <LoadBar />}
             <div className="filter__content">
-              <WidgetHeader>{this.props.options.field}</WidgetHeader>
-              {false && (
-                <div className="filter__info">
-                  <dl className="u-secondaryTextColor u-upperCase u-small">
-                    <dt>1.302</dt>
-                    <dd>Datasets</dd>
-                    <dt>26</dt>
-                    <dd>in view</dd>
-                  </dl>
-                </div>
-              )}
-              <FacetSelector searchable={this.props.options.search} field={this.props.options.field} textField={this.props.options.displayField} displayFormater={this.state.displayName}/>
-              {/*<div className="filter__actions u-secondaryTextColor u-upperCase u-small">
-                {selectedCount > 0 &&
-                  <p className="u-semibold">{selectedCount} selected</p>
-                }
-                {selectedCount === 0 && this.state.expanded &&
-                  <p>All selected</p>
-                }
-                {selectedCount > 0 &&
-                  <button className="u-actionTextColor" onClick={() => this.props.updateFilter({ key: this.props.options.field, action: 'CLEAR' })}>All</button>
-                }
-              </div>*/}
-              <FacetList showCheckbox={true} totalCount={total} items={items} />
-              {/*<div className="filter__options">
-                <ul>
-                  {selectedValues}
-                  {this.state.expanded && this.props.options.showSuggestions &&
-                    multiFacets
-                  }
-                </ul>
-                </div>*/}
+              <WidgetHeader>{this.props.config.filter.name}</WidgetHeader>
+              <FacetOptions config={this.props.config}/>
             </div>
           </WidgetContainer>
         )}

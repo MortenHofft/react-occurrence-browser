@@ -13,6 +13,9 @@ export default config => {
   };
 
   appConfig.fieldFormatter = {
+    Identity: (props) => {
+      return <span>{props.id}</span>;
+    },
     DatasetTitle: fieldFormatter(id =>
       axios
         .get(appConfig.endpoints.dataset + "/" + id)
@@ -74,7 +77,95 @@ export default config => {
   */
 
 
+  let stdFilters = [
+    {
+      name: 'dataset',
+      txName: 'tx.filters.dataset',
+      txDescription: 'tx.filters.datasetDescription',
+      mapping: 'datasetKey', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
+      displayValue: appConfig.fieldFormatter.Identity
+    }
+  ];
+  stdFilters = _.keyBy(stdFilters, 'name');
+
+  let stdSearch = [
+    {
+      name: 'dataset',
+      query: function(q, limit, filter) {
+        //return [{value, [count]}]
+        //if registry then filter is ignored and count not returned.
+        //if es then filter POSTed and count included.
+        // should be cancelable
+        return new Promise(function(resolve, reject) {
+          setTimeout(function() {
+            resolve({
+              total: 100, 
+              results: [{value: Math.random(), count: 20}]
+            });
+          }, 30);
+        });
+      }
+    }
+  ];
+  stdSearch = _.keyBy(stdSearch, 'name');
+
+  let stdWidgets = [
+    {
+      type: 'FACET',//type or better the component itself.
+      filter: stdFilters.dataset,
+      suggest: stdSearch.dataset,
+      facets: function(filter, limit){//could be different from suggest
+        //facets is only used to reflect current state (not accounting for search string)
+        //return stdSearch.dataset.query(undefined, limit, filter);
+        return new Promise(function(resolve, reject) {
+          setTimeout(function() {
+            resolve({
+              total: 100, 
+              results: [{value: 'b124e1e0-4755-430f-9eab-894f25a9b59c', count: 50}]
+            });
+          }, 300);
+        });
+      }
+    }
+  ];
+  stdWidgets = _.keyBy(stdWidgets, 'filter.name');
+
+  let widgets = stdWidgets;//and add custom widgets and filter out stdwidgets not selected in user config.
+
+
   /*
+
+  what is the relation between filters and widgets. there could be multiple ways to set a filter. such as one widget and 2 filters.
+  there should always be at least one widget for a filter.
+  
+  so what defines a filter then. 
+  the things that it takes to do the query for consumers (table, maps, gallery etc) and to show the summary chips.
+  * a must[name] and a value(string/obj) it can take. 
+  * a serializer to construct the es filter. a filter could in theory relate to multiple fields. Perhaps I should define a filter as at least defaulting to a single field operation.
+    * say start date & end date. or substrate being an implcit fungi filter as well. User selects a day. translates to start end of day.
+  * displayname for filter name (translation) and for filter values
+  * description (translation)
+
+  widget then supplements with (in case of single field facet)
+  * suggest/search
+  * esField (somewhat related to the serializer)
+  * 
+  
+  dates: 
+  reading about it it seems that filtering per month, requires month have its own field. similar for year.
+  date histograms require date field NOT date_range. sorting don't work on date_range.
+  so probably use: date_range, start/mid/end, month. year. local time of day (not available now)
+        use date_range for range queries by intervals (incl year). Or make year an array.
+        use month (start) for q by month. or make month an array.
+        use start for sorting.
+  This is influenced a lot by performance and usability. best perhaps to try. and secondly consider it isolated to the serializer.
+  and just use it as e.g. a year filter. that is then mapped to whatever field and query appropriate.
+
+  One widget could control more than one filter (say year and month and perhaps event date).
+  
+  table:
+  sort on date, 
+
   diplayName
   esField
   translationPath for the filter
@@ -122,15 +213,6 @@ export default config => {
       Ignore the unusual behavior of issues for now. Possibly a custom solution for that or all array fields.
   */
 
-  
-  let filters = {
-    dataset: {
-      name: 'dataset',
-      translationPath: 'tx.dataset',
-      field: 'datasetKey'
-    }
-  };
-
   function Identity(props) {
     return <span>{props.id}</span>;
   }
@@ -156,6 +238,7 @@ export default config => {
     config: appConfig,
     displayName: displayName,
     esEndpoint: config.esEndpoint,
-    esRequest: esRequest
+    esRequest: esRequest,
+    widgets: widgets
   };
 };
