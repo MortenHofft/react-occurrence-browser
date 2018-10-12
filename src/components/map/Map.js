@@ -71,7 +71,7 @@ class Map extends Component {
 
   addLayer() {
     let filter = this.props.filter.query;
-    filter = this.props.appSettings.esRequest.build(filter);
+    filter = this.props.appSettings.search.build(filter);
     var tileString =
       "https://esmap.gbif-dev.org//api/tile/{x}/{y}/{z}.mvt?field=coordinate_point&url=" +
       encodeURIComponent(`http:${this.props.appSettings.esEndpoint}/_search?`) +

@@ -6,8 +6,17 @@ import FacetItem from './FacetItem';
 const styles = {
   list: {
     padding: 0,
-    margin: '6px 24px',
+    margin: '6px 0',
     listStyle: 'none'
+  },
+  li: {
+    padding: '0 24px 0 22px',
+    borderLeft: '2px solid transparent'
+  },
+  liActive: {
+    padding: '0 24px 0 22px',
+    borderLeft: '2px solid deepskyblue',
+    background: '#fbfbfb'
   },
   filterInfo: {
     margin: '0px 24px',
@@ -34,8 +43,8 @@ class FacetList extends Component {
     super(props);
 
     this.state = {
-      defaultCap: 5,
-      collapsed: true
+      // defaultCap: 5,
+      // collapsed: true
     };
   }
 
@@ -46,33 +55,25 @@ class FacetList extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.items !== this.props.items) {
-      this.setState({collapsed: true});
-    }
+    // if (prevProps.items !== this.props.items) {
+    //   this.setState({collapsed: true});
+    // }
   }
 
   render() {
-    const { classes, totalCount, items, showCheckbox, showAllAsSelected } = this.props;
+    const { classes, totalCount, items, showCheckbox, showAllAsSelected, highlightIndex } = this.props;
     const visibleItems = this.state.collapsed ? items.slice(0, this.state.defaultCap) : items;
     let listItems = visibleItems.map((x, index) => {
       return (
-        <li key={x.id}>
-          <FacetItem value={x.value} count={x.count} total={totalCount} active={x.selected || showAllAsSelected} showCheckbox={showCheckbox} onChange={() => (this.props.onChange(index, x))} />
+        <li key={x.id} className={highlightIndex===index ? classes.liActive : classes.li} >
+          <FacetItem value={x.value} count={x.count} total={totalCount} active={x.selected || showAllAsSelected} showCheckbox={showCheckbox} onChange={() => (this.props.onChange(x, index))} />
         </li>
       );
     });
     return (
-      <div>
-        <ul className={classes.list}>
-          {listItems}
-        </ul>
-        {this.state.defaultCap < items.length && 
-        <div className={classes.filterInfo}>
-          <span></span>
-          <span className={classes.filterAction} onClick={() => (this.setState({collapsed: false}))} role="button">More</span>
-        </div>
-        }
-      </div>
+      <ul className={classes.list}>
+        {listItems}
+      </ul>
     );
   }
 }

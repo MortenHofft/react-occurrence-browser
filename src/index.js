@@ -11,7 +11,7 @@ import Layout from './components/layout/Layout'
 import history from './history';
 import StateContext from './StateContext';
 import stateHelper from './stateHelper';
-import configBuilder from './configBuilder';
+import configBuilder from './config/configBuilder';
 import OmniSearch from './components/omniSearch/OmniSearch'
 import WidgetDrawer from './components/widgetDrawer/WidgetDrawer';
 import styles from './indexStyle';

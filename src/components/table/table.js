@@ -47,7 +47,7 @@ class Table extends Component {
   updateResults() {
     let q = this.props.query || '';
     q = q === '' ? '*' : q;
-    this.props.appSettings.esRequest.getData(this.props.filter.query, 20, 0)
+    this.props.appSettings.search.query(this.props.filter.query, 20, 0)
       .then(
         (response) => {
             let result = response.data;

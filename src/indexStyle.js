@@ -23,7 +23,10 @@ export default {
       boxSizing: 'border-box'
     },
     '& [role="button"]': {
-      cursor: 'pointer'
+      cursor: 'pointer',
+      '&:focus': {
+        outline: 'tomato'
+      }
     },
     display: 'flex',
     flexDirection: 'column'

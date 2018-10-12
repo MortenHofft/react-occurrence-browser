@@ -2,7 +2,7 @@ import bodybuilder from 'bodybuilder';
 import _ from 'lodash';
 import axios from 'axios';
 
-function EsRequest(esEndpoint, config) {
+function EsRequest(esEndpoint, fieldMapping) {
   function build(query) {
     return compose(query).build();
   }
@@ -11,7 +11,7 @@ function EsRequest(esEndpoint, config) {
     query = query || {};
     let builder = bodybuilder();
     _.forOwn(query.must, function (value, field) {
-      field = config.fieldMapping[field] || field;
+      field = fieldMapping[field] || field;
       builder.filter('terms', field, [].concat(value));
     });
     _.forOwn(query.must_not, function (value, field) {
@@ -26,7 +26,7 @@ function EsRequest(esEndpoint, config) {
     return builder;
   }
   
-  function getData(appQuery, size, from) {
+  function getData(appQuery, size, from, facet) {
     let body = build(appQuery);
     body.size = size;
     body.from = from;
@@ -38,10 +38,24 @@ function EsRequest(esEndpoint, config) {
     });
   }
 
+  function get(body) {
+    return axios.post(esEndpoint + '/_search', body, {
+      headers: {
+        'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
+      }
+    });
+  }
+
+  function addFacet(builder, option) {
+    return builder.aggregation(option.name, option.field, {size: options.size || 10});
+  }
+
   return {
     build,
     compose,
-    getData
+    getData,
+    addFacet,
+    get
   }
 }
 

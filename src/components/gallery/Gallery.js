@@ -48,7 +48,7 @@ class Gallery extends Component {
     let filter = _.merge({}, this.props.filter.query, {
       must: { media_type: ["StillImage"] }
     });
-    this.props.appSettings.esRequest.getData(filter, 50, 0).then(
+    this.props.appSettings.search.query(filter, 50, 0).then(
       response => {
         let result = response.data;
         let occurrences = _.map(result.hits.hits, "_source");

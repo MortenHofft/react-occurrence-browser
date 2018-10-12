@@ -1,7 +1,8 @@
 import axios from "axios";
 import React from "react";
-import fieldFormatter from "./components/fieldFormatter";
-import EsRequest from './esRequest';
+import fieldFormatter from "../components/fieldFormatter";
+import EsRequest from '../esRequest';
+import ApiEs from './api_es';
 
 export default config => {
   let appConfig = {};
@@ -36,8 +37,130 @@ export default config => {
 
   appConfig.fieldMapping = {
     substrate: 'dynamicProperties.Substrate.keyword',
-    taxonKey: 'backbone.taxonKey'
+    taxonKey: 'backbone.taxonKey',
+    dataset: 'datasetKey',
+    Substrate: 'dynamicProperties.Substrate.keyword'
   };
+
+  const esRequest = new EsRequest(config.esEndpoint, appConfig.fieldMapping);
+  const api_es = new ApiEs(config.esEndpoint, appConfig.fieldMapping);
+
+  let stdFilters = [
+    {
+      name: 'dataset',
+      txName: 'tx.filters.dataset',
+      txDescription: 'tx.filters.datasetDescription',
+      mapping: 'datasetKey', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
+      displayValue: appConfig.fieldFormatter.DatasetTitle
+    },
+    {
+      name: 'Substrate',
+      txName: 'tx.filters.Substrate',
+      txDescription: 'tx.filters.Substrate',
+      mapping: 'dynamicProperties.Substrate.keyword', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
+      displayValue: appConfig.fieldFormatter.Identity
+    },
+    {
+      name: 'institutionCode',
+      txName: 'tx.filters.institutionCode',
+      txDescription: 'tx.filters.institutionCodeDescription',
+      mapping: 'institutionCode', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
+      displayValue: appConfig.fieldFormatter.Identity
+    }
+  ];
+  stdFilters = _.keyBy(stdFilters, 'name');
+
+  let stdSearch = [
+    {
+      name: 'dataset',
+      query: function (q, filter, limit) {
+        return api_es.suggest(filter, q, 'datasetTitle', 'datasetKey', limit);
+      }
+    },
+    {
+      name: 'Substrate',
+      query: function (q, filter, limit) {
+        return api_es.suggest(filter, q, 'dynamicProperties.Substrate.keyword', 'dynamicProperties.Substrate.keyword', limit);
+      }
+    },
+    {
+      name: 'institutionCode',
+      query: function (q, filter, limit) {
+        return api_es.suggest(filter, q, 'institutionCode', 'institutionCode', limit);
+      }
+    }
+  ];
+  stdSearch = _.keyBy(stdSearch, 'name');
+
+  let stdWidgets = [
+    {
+      type: 'FACET',//type or better the component itself.
+      filter: stdFilters.dataset,
+      suggest: stdSearch.dataset,
+      facets: function (filter, limit) {
+        return api_es.facet(filter, 'datasetKey', limit);
+      }
+    },
+    {
+      type: 'FACET',//type or better the component itself.
+      filter: stdFilters.Substrate,
+      suggest: stdSearch.Substrate,
+      facets: function (filter, limit) {
+        return api_es.facet(filter, 'dynamicProperties.Substrate.keyword', limit);
+      }
+    },
+    {
+      type: 'FACET',//type or better the component itself.
+      filter: stdFilters.institutionCode,
+      suggest: stdSearch.institutionCode,
+      facets: function (filter, limit) {
+        return api_es.facet(filter, 'institutionCode', limit);
+      }
+    }
+  ];
+  stdWidgets = _.keyBy(stdWidgets, 'filter.name');
+
+  let widgets = stdWidgets;//and add custom widgets and filter out stdwidgets not selected in user config.
+
+
+
+  function Identity(props) {
+    return <span>{props.id}</span>;
+  }
+
+  function displayName(field) {
+    switch (field) {
+      case "datasetKey":
+        return appConfig.fieldFormatter.DatasetTitle;
+      case "taxonKey":
+        return appConfig.fieldFormatter.SpeciesTitle;
+      case "publishingOrg":
+        return appConfig.fieldFormatter.PublisherTitle;
+      case "basisOfRecord":
+        return appConfig.fieldFormatter.BasisOfRecordTitle;
+      default:
+        return Identity;
+    }
+  }
+
+  return {
+    config: appConfig,
+    displayName: displayName,
+    esEndpoint: config.esEndpoint,
+    esRequest: esRequest,
+    widgets: widgets,
+    filters: stdFilters,
+    search: api_es
+  };
+};
+
+
+
+
+
+
+
+
 
 
   /*
@@ -77,67 +200,14 @@ export default config => {
   */
 
 
-  let stdFilters = [
-    {
-      name: 'dataset',
-      txName: 'tx.filters.dataset',
-      txDescription: 'tx.filters.datasetDescription',
-      mapping: 'datasetKey', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
-      displayValue: appConfig.fieldFormatter.Identity
-    }
-  ];
-  stdFilters = _.keyBy(stdFilters, 'name');
 
-  let stdSearch = [
-    {
-      name: 'dataset',
-      query: function(q, limit, filter) {
-        //return [{value, [count]}]
-        //if registry then filter is ignored and count not returned.
-        //if es then filter POSTed and count included.
-        // should be cancelable
-        return new Promise(function(resolve, reject) {
-          setTimeout(function() {
-            resolve({
-              total: 100, 
-              results: [{value: Math.random(), count: 20}]
-            });
-          }, 30);
-        });
-      }
-    }
-  ];
-  stdSearch = _.keyBy(stdSearch, 'name');
-
-  let stdWidgets = [
-    {
-      type: 'FACET',//type or better the component itself.
-      filter: stdFilters.dataset,
-      suggest: stdSearch.dataset,
-      facets: function(filter, limit){//could be different from suggest
-        //facets is only used to reflect current state (not accounting for search string)
-        //return stdSearch.dataset.query(undefined, limit, filter);
-        return new Promise(function(resolve, reject) {
-          setTimeout(function() {
-            resolve({
-              total: 100, 
-              results: [{value: 'b124e1e0-4755-430f-9eab-894f25a9b59c', count: 50}]
-            });
-          }, 300);
-        });
-      }
-    }
-  ];
-  stdWidgets = _.keyBy(stdWidgets, 'filter.name');
-
-  let widgets = stdWidgets;//and add custom widgets and filter out stdwidgets not selected in user config.
 
 
   /*
-
+  
   what is the relation between filters and widgets. there could be multiple ways to set a filter. such as one widget and 2 filters.
   there should always be at least one widget for a filter.
-  
+   
   so what defines a filter then. 
   the things that it takes to do the query for consumers (table, maps, gallery etc) and to show the summary chips.
   * a must[name] and a value(string/obj) it can take. 
@@ -145,12 +215,12 @@ export default config => {
     * say start date & end date. or substrate being an implcit fungi filter as well. User selects a day. translates to start end of day.
   * displayname for filter name (translation) and for filter values
   * description (translation)
-
+  
   widget then supplements with (in case of single field facet)
   * suggest/search
   * esField (somewhat related to the serializer)
   * 
-  
+   
   dates: 
   reading about it it seems that filtering per month, requires month have its own field. similar for year.
   date histograms require date field NOT date_range. sorting don't work on date_range.
@@ -160,20 +230,20 @@ export default config => {
         use start for sorting.
   This is influenced a lot by performance and usability. best perhaps to try. and secondly consider it isolated to the serializer.
   and just use it as e.g. a year filter. that is then mapped to whatever field and query appropriate.
-
-  One widget could control more than one filter (say year and month and perhaps event date).
   
+  One widget could control more than one filter (say year and month and perhaps event date).
+   
   table:
   sort on date, 
-
+  
   diplayName
   esField
   translationPath for the filter
   ? serializer/deserializer (e.g. date intervals)
   suggest/search
-
+  
   a query builder, that can point to either es or apiv1
-
+  
   filterWidget facet
   Does
     show breakdown of a specific field. one field only.
@@ -203,8 +273,8 @@ export default config => {
     Option to toggle (hide all but title and a count).
     Option to show all selected (and not just top n)
     Option to remove widget
-
-
+  
+  
     This works for fields that are one value.
     
     How to handle multivalue fields? Custom filter perhaps?
@@ -212,33 +282,3 @@ export default config => {
       (as unselected could be in result set and have more counts)
       Ignore the unusual behavior of issues for now. Possibly a custom solution for that or all array fields.
   */
-
-  function Identity(props) {
-    return <span>{props.id}</span>;
-  }
-
-  function displayName(field) {
-    switch (field) {
-      case "datasetKey":
-        return appConfig.fieldFormatter.DatasetTitle;
-      case "taxonKey":
-        return appConfig.fieldFormatter.SpeciesTitle;
-      case "publishingOrg":
-        return appConfig.fieldFormatter.PublisherTitle;
-      case "basisOfRecord":
-        return appConfig.fieldFormatter.BasisOfRecordTitle;
-      default:
-        return Identity;
-    }
-  }
-
-  const esRequest = new EsRequest(config.esEndpoint, appConfig);
-
-  return {
-    config: appConfig,
-    displayName: displayName,
-    esEndpoint: config.esEndpoint,
-    esRequest: esRequest,
-    widgets: widgets
-  };
-};
