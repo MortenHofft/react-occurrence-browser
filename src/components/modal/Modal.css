@@ -1,3 +1,4 @@
+/* for inspiration see https://codepen.io/lynnwallenstein/pen/ihqlF or https://css-tricks.com/considerations-styling-modal/*/
 .modal, .modal_backdrop {
   position: fixed;
   top: 0;
