@@ -36,18 +36,12 @@ const styles = {
     flex: '1 1 auto',
     display: 'flex',
     flexDirection: "column",
-    overflow: 'hidden'
+    overflow: 'hidden',
+    margin: 10,
   },
   summary: {
     flex: "0 0 auto",
     margin: "0 10px"
-  },
-  viewData: {
-    flex: "1 1 auto",
-    overflow: "hidden",
-    margin: 10,
-    display: 'flex',
-    flexDirection: 'column'
   },
   secondary: {
     width: 300,
@@ -76,14 +70,12 @@ class Layout extends Component {
             {this.props.viewSelector}
           </div>
         </div>
+        <div className={classes.summary}>
+          {this.props.filterSummary}
+        </div>
         <div className={classes.body}>
           <div className={classes.main}>
-            <div className={classes.summary}>
-              {this.props.filterSummary}
-            </div>
-            <div className={classes.viewData}>
-              {mainContent}
-            </div>
+            {mainContent}
           </div>
           {this.props.showWidgets && <div className={classes.secondary}>
             {this.props.widgetDrawer}
