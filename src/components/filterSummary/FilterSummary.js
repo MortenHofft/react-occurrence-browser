@@ -8,8 +8,11 @@ import Chip from '../chip/Chip'
 let styles = {
     chips: {
         display: 'inline',
-        margin: '0 -5px',
+        margin: '0',
         padding: '0',
+        content: '""',
+        clear: 'both',
+        display: 'table',
         '& li': {
             margin: '0 5px 5px 0',
             display: 'inline-block',
@@ -29,7 +32,7 @@ function getListItem(DisplayName, param, value, index, cb, negated) {
 function FilterSummary(props) {
     const { classes, appSettings } = props;
     const filterConfig = appSettings.filters;
-    const style = { margin: '10px 0' };
+    const style = { margin: '10px 0 -5px 0' };
     let filterChips = [];
     let negatedFilterChips = [];
     let index = 0;
@@ -43,13 +46,17 @@ function FilterSummary(props) {
     }
     Object.keys(must).forEach(function (param) {
         must[param].forEach(function (value) {
-            filterChips.push(getListItem(filterConfig[param].displayValue, param, value, index++, props.updateFilter, false, classes));
+            filterChips.push(getListItem(appSettings.displayName(param), param, value, index++, props.updateFilter, false, classes));
         });
     });
 
     Object.keys(must_not).forEach(function (param) {
         must_not[param].forEach(function (value) {
-            negatedFilterChips.push(getListItem(filterConfig[param].displayValue, param, value, index++, props.updateFilter, true, classes));
+            if (filterConfig[param]) {
+                negatedFilterChips.push(getListItem(filterConfig[param].displayValue, param, value, index++, props.updateFilter, true, classes));
+            } else {
+                console.error('non configured filter');
+            }
         });
     });
 

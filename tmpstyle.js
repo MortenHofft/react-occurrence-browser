@@ -1,33 +1,5 @@
 export default {
-  occurrenceSearch: {
-    position: 'relative',
-    background: '#f2f6f9',
-    height: '100%',
-    color: '#2e3c43',
-    fontSize: '14px',
-    boxSizing: 'border-box',
-    fontSmoothing: 'antialiased',
-    fontFamily: 'Open sans, BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif',
-    overflow: 'hidden',
-    '& ::-webkit-scrollbar': {
-      width: 6,
-      height: 6
-    },
-    '& ::-webkit-scrollbar-track': {
-      background: '#ddd'
-    },
-    '& ::-webkit-scrollbar-thumb': {
-      background: '#888'
-    },
-    '& *': {
-      boxSizing: 'border-box'
-    },
-    '& [role="button"]': {
-      cursor: 'pointer',
-      '&:focus': {
-        outline: 'tomato'
-      }
-    },
+  '@global': {
     '& [tooltip-text]': {
       position: 'relative',
       cursor: 'pointer'
@@ -72,9 +44,9 @@ export default {
       left: 'auto'
     },
     '& [tooltip-position=left]:before': {
-      marginLeft: 0,
+      marginLeft: '0',
       marginRight: -12,
-      marginBottom: 0,
+      marginBottom: '0',
       borderTopColor: 'transparent',
       borderLeftColor: '#2e3c43'
     },
@@ -108,26 +80,15 @@ export default {
     '& [tooltip-position=right]:hover:after, [tooltip-position=right]:hover:before': {
       transform: 'translateX(12px)'
     },
+    '.swiper-container-android .swiper-slide, .swiper-pagination, .swiper-wrapper': {
+      transform: 'translate3d(0,0,0)'
+    },
     '& [tooltip-position=left]:before, [tooltip-position=right]:before': {
-      top: 10
+      top: 3
     },
     '& [tooltip-position=left]:after, [tooltip-position=right]:after': {
       marginLeft: '0',
       marginBottom: -16
-    },
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  searchBar: {
-    border: '1px solid #ddd',
-    position: 'relative',
-    zIndex: '50',
-    margin: '10px',
-    '& input': {
-      padding: '10px',
-      display: 'block',
-      width: '100%',
-      border: 'none'
     }
   }
 };

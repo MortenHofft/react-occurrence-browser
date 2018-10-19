@@ -20,3 +20,15 @@ add a widget for individual count (or in above)
 
 find dataset with dunProp length/weight or similar numeric value.
 add as summary widget.
+
+# choropleths
+GADM seems like a good data source for political maps
+
+Splitting polygons into smaller similar sized areas.
+http://blog.cleverelephant.ca/2018/06/polygon-splitting.html
+
+Intersting read on grids: https://www.r-bloggers.com/session-1-gridding-data-for-multi-scale-macroecological-analyses/
+
+high res land polygons http://openstreetmapdata.com/data/land-polygons
+natrual earth data: https://www.naturalearthdata.com/downloads/110m-physical-vectors/
+equal area pixels that keep ratio somewhat https://healpix.sourceforge.io/index.php

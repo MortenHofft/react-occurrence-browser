@@ -7,9 +7,9 @@ class WidgetDrawer extends Component {
     return (
         <div>
           <section>
-            {/* <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.dataset}/> */}
+            <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.dataset}/>
             <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.Substrate}/>
-            {/* <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.institutionCode}/> */}
+            <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.institutionCode}/>
             
             
             {/* <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} options={{field: 'substrate', displayName: this.props.displayName('substrate'), showSuggestions: true, search: false, autoComplete: {

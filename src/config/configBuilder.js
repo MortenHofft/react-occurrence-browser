@@ -129,18 +129,7 @@ export default config => {
   }
 
   function displayName(field) {
-    switch (field) {
-      case "datasetKey":
-        return appConfig.fieldFormatter.DatasetTitle;
-      case "taxonKey":
-        return appConfig.fieldFormatter.SpeciesTitle;
-      case "publishingOrg":
-        return appConfig.fieldFormatter.PublisherTitle;
-      case "basisOfRecord":
-        return appConfig.fieldFormatter.BasisOfRecordTitle;
-      default:
-        return Identity;
-    }
+    return stdFilters[field] ? stdFilters[field].displayValue : Identity;
   }
 
   return {

@@ -5,7 +5,7 @@ import OccurrenceBrowser from '../../src'
 
 const style = {
   height: 'calc(100vh - 80px)',
-  width: '90%'
+  width: '95%'
 };
 
 const fieldConfig = {

@@ -38,6 +38,16 @@ function EsRequest(esEndpoint, fieldMapping) {
     });
   }
 
+  function count(appQuery) {
+    let body = build(appQuery);
+
+    return axios.post(esEndpoint + '/_count', body, {
+      headers: {
+        'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
+      }
+    }).then(response => {return response.data.count});
+  }
+
   function facet(appQuery, keyField, size) {
     let body = compose(appQuery)
       .aggregation('terms', keyField, { size: size || 10 })
@@ -79,8 +89,6 @@ function EsRequest(esEndpoint, fieldMapping) {
         count: e.doc_count
       };
     });
-    console.log(results);
-    console.log(list);
     return {
       results: list,
       count: results.hits.total
@@ -92,7 +100,8 @@ function EsRequest(esEndpoint, fieldMapping) {
     facet,
     suggest,
     compose,
-    build
+    build,
+    count
   }
 }
 

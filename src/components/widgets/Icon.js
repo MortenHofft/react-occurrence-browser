@@ -8,7 +8,7 @@ const styles = {
 };
 
 function Icon(props) {
-  const style = {width: (props.size || '20px'), height: (props.size || '20px') };
+  const style = {width: (props.width || props.size || '20px'), height: (props.height || props.size || '20px') };
   let svg = <span>sdf</span>
   switch (props.name) {
     case 'search': {

@@ -26,7 +26,8 @@ class OccurrenceSearch extends Component {
     this.updateView = this.updateView.bind(this);
     this.updateWidgets = this.updateWidgets.bind(this);
     this.hasWidget = this.hasWidget.bind(this);
-
+    this.setOpenMenu = this.setOpenMenu.bind(this);
+    this.toggleWidgets = this.toggleWidgets.bind(this);
 
     let appSettings = configBuilder({esEndpoint: this.props.endpoint});
     
@@ -47,11 +48,24 @@ class OccurrenceSearch extends Component {
       api: {
         updateFilter: this.updateFilter,
         updateWidgets: this.updateWidgets,
-        hasWidget: this.hasWidget
+        hasWidget: this.hasWidget,
+        toggleWidgets: this.toggleWidgets,
+        setOpenMenu: this.setOpenMenu,
       },
+      openMenu: undefined,
+      showWidgets: true,
       appSettings: appSettings,
       filter: { query: query, hash: objectHash(query) }
     };
+  }
+
+  toggleWidgets() {
+    this.setState({showWidgets: !this.state.showWidgets});
+  }
+
+  setOpenMenu(menuId) {
+    this.setState({openMenu: menuId});
+    console.log(menuId);
   }
 
   updateWidgets(field, action) {
