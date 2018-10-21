@@ -124,6 +124,13 @@ class FacetOptions extends Component {
   getFilterFacets() {
     // if nothing is selected then ask for a default limit of facets. else ask for selected facets only.
     let limit = this.state.selected.length || this.state.limit;
+    
+    // should facets be shown when nothing is selected?
+    if (this.props.config.hideFacetsWhenAll && this.state.selected.length === 0) {
+      this.setState({ filteredItems: [], total: 0 });
+      return;
+    }
+
     let DisplayFormater = this.props.config.filter.displayValue;
     let facetPromise = this.props.config.facets(this.props.filter.query, limit);
     this.facetPromise = facetPromise;
@@ -135,6 +142,17 @@ class FacetOptions extends Component {
             value: <DisplayFormater id={e.value} />,
             id: e.value
           }));
+          // Even if there is no results, then show the selected items with zero counts
+          for (var i = 0; i < this.state.selected.length; i++) {
+            let val = this.state.selected[i];
+            if (_.findIndex(results, {id: val}) === -1) {
+              results.push({
+                count: 0,
+                value: <DisplayFormater id={val} />,
+                id: val
+              });
+            }
+          }
           let items = this.getItems(results, this.state.selected);
           let newState = { filteredItems: items, total: result.count }
           if (!this.state.isDirty) {
@@ -282,6 +300,8 @@ class FacetOptions extends Component {
     const items = isDirty
       ? this.state.items || []
       : this.state.filteredItems || [];
+    const showNoResults = !this.props.config.hideFacetsWhenAll || (this.state.filteredItems && this.state.filteredItems.length > 0);
+
     return (
       <div>
         <div className={classes.search}>
@@ -309,7 +329,7 @@ class FacetOptions extends Component {
           onChange={this.handleSelectChange}
         />
 
-        {items.length === 0 && (
+        {showNoResults && items.length === 0 && (
           <div className={classes.noResults}>
             No results found - try to loosen your filters
           </div>

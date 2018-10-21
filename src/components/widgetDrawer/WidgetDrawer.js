@@ -14,6 +14,7 @@ class WidgetDrawer extends Component {
               <WidgetHeader>Occurrences</WidgetHeader>
               <div style={{margin: '0 20px 20px 20px', fontSize: '26px', fontWeight: 500}}><Count filter={this.props.filter} /> </div>
             </WidgetContainer>
+            <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.recordedBy}/>
             <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.dataset}/>
             <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.Substrate}/>
             <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.institutionCode}/>

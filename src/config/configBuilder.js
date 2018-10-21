@@ -66,6 +66,13 @@ export default config => {
       txDescription: 'tx.filters.institutionCodeDescription',
       mapping: 'institutionCode', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
       displayValue: appConfig.fieldFormatter.Identity
+    },
+    {
+      name: 'recordedBy',
+      txName: 'tx.filters.recordedBy',
+      txDescription: 'tx.filters.recordedByeDescription',
+      mapping: 'recordedBy', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
+      displayValue: appConfig.fieldFormatter.Identity
     }
   ];
   stdFilters = _.keyBy(stdFilters, 'name');
@@ -88,6 +95,12 @@ export default config => {
       query: function (q, filter, limit) {
         return api_es.suggest(filter, q, 'institutionCode', 'institutionCode', limit);
       }
+    },
+    {
+      name: 'recordedBy',
+      query: function (q, filter, limit) {
+        return api_es.suggestCompleter(q, 'recordedBy.suggest', limit);
+      }
     }
   ];
   stdSearch = _.keyBy(stdSearch, 'name');
@@ -103,10 +116,19 @@ export default config => {
     },
     {
       type: 'FACET',//type or better the component itself.
+      filter: stdFilters.recordedBy,
+      suggest: stdSearch.recordedBy,
+      facets: function (filter, limit) {
+        return api_es.facet(filter, 'recordedBy', limit);
+      },
+      hideFacetsWhenAll: true
+    },
+    {
+      type: 'FACET',//type or better the component itself.
       filter: stdFilters.Substrate,
       suggest: stdSearch.Substrate,
       facets: function (filter, limit) {
-        return api_es.facet(filter, 'dynamicProperties.Substrate.keyword', limit);
+        return api_es.facet(filter, 'dynamicProperties.preservative.keyword', limit);
       }
     },
     {
