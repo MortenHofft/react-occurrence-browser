@@ -3,6 +3,7 @@ import React from "react";
 import fieldFormatter from "../components/fieldFormatter";
 import EsRequest from '../esRequest';
 import ApiEs from './api_es';
+import {FacetWidget} from '../components/widgets';
 
 export default config => {
   let appConfig = {};
@@ -112,7 +113,8 @@ export default config => {
       suggest: stdSearch.dataset,
       facets: function (filter, limit) {
         return api_es.facet(filter, 'datasetKey', limit);
-      }
+      },
+      component: FacetWidget
     },
     {
       type: 'FACET',//type or better the component itself.
@@ -121,6 +123,7 @@ export default config => {
       facets: function (filter, limit) {
         return api_es.facet(filter, 'recordedBy', limit);
       },
+      component: FacetWidget,
       hideFacetsWhenAll: true
     },
     {
@@ -129,7 +132,8 @@ export default config => {
       suggest: stdSearch.Substrate,
       facets: function (filter, limit) {
         return api_es.facet(filter, 'dynamicProperties.Substrate.keyword', limit);
-      }
+      },
+      component: FacetWidget
     },
     {
       type: 'FACET',//type or better the component itself.
@@ -137,7 +141,8 @@ export default config => {
       suggest: stdSearch.institutionCode,
       facets: function (filter, limit) {
         return api_es.facet(filter, 'institutionCode', limit);
-      }
+      },
+      component: FacetWidget
     }
   ];
   stdWidgets = _.keyBy(stdWidgets, 'filter.name');

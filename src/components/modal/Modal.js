@@ -1,28 +1,34 @@
-import ReactDOM from 'react-dom';
-import React from 'react';
+import ReactDOM from "react-dom";
+import React from "react";
+import StateContext from "../../StateContext";
 
 const modalRoot = document.body;
 
 class Modal extends React.Component {
-    constructor(props) {
-      super(props);
-      this.el = document.createElement('div');
-    }
-  
-    componentDidMount() {
-      modalRoot.appendChild(this.el);
-    }
-  
-    componentWillUnmount() {
-      modalRoot.removeChild(this.el);
-    }
-  
-    render() {
-      return ReactDOM.createPortal(
-        this.props.children,
-        this.el,
-      );
-    }
+  constructor(props) {
+    super(props);
+    this.el = document.createElement("div");
   }
 
-export default Modal;
+  componentDidMount() {
+    this.props.appRef.current.appendChild(this.el);
+  }
+
+  componentWillUnmount() {
+    this.props.appRef.current.removeChild(this.el);
+  }
+
+  render() {
+    return ReactDOM.createPortal(this.props.children, this.el);
+  }
+}
+
+let hocModal = props => (
+  <StateContext.Consumer>
+    {({ appRef }) => {
+      return <Modal {...props} appRef={appRef} />;
+    }}
+  </StateContext.Consumer>
+);
+
+export default hocModal;

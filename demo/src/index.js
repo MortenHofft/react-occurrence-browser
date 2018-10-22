@@ -17,6 +17,7 @@ const fieldConfig = {
     {
       name: 'datasetKey',
       width: 100,
+      filterWidget: 'dataset',
       formatter: 'DatasetTitle'
     },
     {

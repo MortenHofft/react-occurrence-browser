@@ -19,6 +19,7 @@ import styles from './indexStyle';
 class OccurrenceSearch extends Component {
   constructor(props) {
     super(props);
+
     this.handleChange = this.handleChange.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.updateFilter = this.updateFilter.bind(this);
@@ -44,7 +45,7 @@ class OccurrenceSearch extends Component {
 
     this.state = {
       value: '',
-      activeView: 'GALLERY',
+      activeView: 'TABLE',
       api: {
         updateFilter: this.updateFilter,
         updateWidgets: this.updateWidgets,
@@ -55,7 +56,8 @@ class OccurrenceSearch extends Component {
       openMenu: undefined,
       showWidgets: true,
       appSettings: appSettings,
-      filter: { query: query, hash: objectHash(query) }
+      filter: { query: query, hash: objectHash(query) },
+      appRef: React.createRef()
     };
   }
 
@@ -121,7 +123,7 @@ class OccurrenceSearch extends Component {
   render() {
     return (
       <StateContext.Provider value={this.state}>
-        <div className={this.props.classes.occurrenceSearch}>
+        <div className={this.props.classes.occurrenceSearch} ref={this.state.appRef}>
           <Layout 
             activeView={this.state.activeView}
             omniSearch={<OmniSearch filter={this.state.filter} updateFilter={this.state.api.updateFilter} />}

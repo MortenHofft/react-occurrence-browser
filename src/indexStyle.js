@@ -8,6 +8,7 @@ export default {
     boxSizing: 'border-box',
     fontSmoothing: 'antialiased',
     fontFamily: 'Open sans, BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif',
+    //fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif',
     overflow: 'hidden',
     '& ::-webkit-scrollbar': {
       width: 6,
