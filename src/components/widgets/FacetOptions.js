@@ -131,7 +131,7 @@ class FacetOptions extends Component {
       return;
     }
 
-    let DisplayFormater = this.props.config.filter.displayValue;
+    let DisplayFormater = this.props.config.filter.displayName;
     let facetPromise = this.props.config.facets(this.props.filter.query, limit);
     this.facetPromise = facetPromise;
     facetPromise.then(
@@ -172,7 +172,7 @@ class FacetOptions extends Component {
 
   getSearchResults() {
     this.setState({ showSearchResults: true });
-    let DisplayFormater = this.props.config.filter.displayValue;
+    let DisplayFormater = this.props.config.filter.displayName;
     //remove filter for this field (to give results other than the already selected) aka multiselect
     let filter = _.clone(this.props.filter.query);
     _.unset(filter, `must.${this.props.config.filter.name}`);

@@ -73,7 +73,8 @@ class Map extends Component {
     let filter = this.props.filter.query;
     filter = this.props.appSettings.search.build(filter);
     var tileString =
-      "https://esmap.gbif-dev.org//api/tile/{x}/{y}/{z}.mvt?field=coordinate_point&url=" +
+      // "https://esmap.gbif-dev.org//api/tile/{x}/{y}/{z}.mvt?field=coordinate_point&url=" +
+      "http://localhost:3000/api/tile/point/{x}/{y}/{z}.mvt?field=coordinate_point&url=" +
       encodeURIComponent(`http:${this.props.appSettings.esEndpoint}/_search?`) +
       "&filter=" +
       JSON.stringify(filter.query);

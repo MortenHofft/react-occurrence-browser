@@ -13,16 +13,16 @@ export default config => {
     species: "//api.gbif.org/v1/species"
   };
 
-  appConfig.fieldFormatter = {
+  let displayName = {
     Identity: (props) => {
       return <span>{props.id}</span>;
     },
-    DatasetTitle: fieldFormatter(id =>
+    datasetKey: fieldFormatter(id =>
       axios
         .get(appConfig.endpoints.dataset + "/" + id)
         .then(result => result.data)
     ),
-    PublisherTitle: fieldFormatter(id =>
+    publisherKey: fieldFormatter(id =>
       axios
         .get(appConfig.endpoints.publisher + "/" + id)
         .then(result => result.data)
@@ -51,28 +51,28 @@ export default config => {
       txName: 'tx.filters.dataset',
       txDescription: 'tx.filters.datasetDescription',
       mapping: 'datasetKey', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
-      displayValue: appConfig.fieldFormatter.DatasetTitle
+      displayName: displayName.datasetKey
     },
     {
       name: 'Substrate',
       txName: 'tx.filters.Substrate',
       txDescription: 'tx.filters.Substrate',
       mapping: 'dynamicProperties.Substrate.keyword', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
-      displayValue: appConfig.fieldFormatter.Identity
+      displayName: displayName.Identity
     },
     {
       name: 'institutionCode',
       txName: 'tx.filters.institutionCode',
       txDescription: 'tx.filters.institutionCodeDescription',
       mapping: 'institutionCode', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
-      displayValue: appConfig.fieldFormatter.Identity
+      displayName: displayName.Identity
     },
     {
       name: 'recordedBy',
       txName: 'tx.filters.recordedBy',
       txDescription: 'tx.filters.recordedByeDescription',
       mapping: 'recordedBy', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
-      displayValue: appConfig.fieldFormatter.Identity
+      displayName: displayName.Identity
     }
   ];
   stdFilters = _.keyBy(stdFilters, 'name');
@@ -128,7 +128,7 @@ export default config => {
       filter: stdFilters.Substrate,
       suggest: stdSearch.Substrate,
       facets: function (filter, limit) {
-        return api_es.facet(filter, 'dynamicProperties.preservative.keyword', limit);
+        return api_es.facet(filter, 'dynamicProperties.Substrate.keyword', limit);
       }
     },
     {
@@ -150,13 +150,13 @@ export default config => {
     return <span>{props.id}</span>;
   }
 
-  function displayName(field) {
-    return stdFilters[field] ? stdFilters[field].displayValue : Identity;
+  function getDisplayName(field) {
+    return displayName[field] ? displayName[field] : displayName.Identity;
   }
 
   return {
     config: appConfig,
-    displayName: displayName,
+    displayName: getDisplayName,
     esEndpoint: config.esEndpoint,
     esRequest: esRequest,
     widgets: widgets,

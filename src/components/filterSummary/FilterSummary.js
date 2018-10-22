@@ -42,18 +42,18 @@ function FilterSummary(props) {
 
     let freetext = _.get(props, 'filter.query.freetext', '');
     if (freetext !== '') {
-        filterChips.push(getListItem(filterConfig[param].displayValue, 'freetext', freetext, index++, props.updateFilter, false, classes));
+        filterChips.push(getListItem(filterConfig[param].displayName, 'freetext', freetext, index++, props.updateFilter, false, classes));
     }
     Object.keys(must).forEach(function (param) {
         must[param].forEach(function (value) {
-            filterChips.push(getListItem(appSettings.displayName(param), param, value, index++, props.updateFilter, false, classes));
+            filterChips.push(getListItem(appSettings.filters[param].displayName, param, value, index++, props.updateFilter, false, classes));
         });
     });
 
     Object.keys(must_not).forEach(function (param) {
         must_not[param].forEach(function (value) {
             if (filterConfig[param]) {
-                negatedFilterChips.push(getListItem(filterConfig[param].displayValue, param, value, index++, props.updateFilter, true, classes));
+                negatedFilterChips.push(getListItem(appSettings.filters[param].displayName, param, value, index++, props.updateFilter, true, classes));
             } else {
                 console.error('non configured filter');
             }

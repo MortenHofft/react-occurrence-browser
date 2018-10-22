@@ -16,7 +16,8 @@ const fieldConfig = {
     },
     {
       name: 'datasetKey',
-      width: 100
+      width: 100,
+      formatter: 'DatasetTitle'
     },
     {
       name: 'countryCode',
@@ -40,7 +41,8 @@ const fieldConfig = {
 class Demo extends Component {
   constructor(props) {
     super(props);
-    this.state = {endpoint: 'http://localhost:9200/fungi'};
+    this.state = {endpoint: '//localhost:9200/fungi'};
+    // this.state = {endpoint: '//es1.gbif-dev.org/all_fungi'};
   }
 
   render() {
