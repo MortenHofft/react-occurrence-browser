@@ -1,5 +1,6 @@
 import React, {Component} from 'react'
 import {render} from 'react-dom'
+import _ from 'lodash';
 
 import OccurrenceBrowser from '../../src'
 
@@ -39,6 +40,21 @@ const fieldConfig = {
   ]
 };
 
+let myCustomWidget = function(props) {
+  return (
+    <div>
+      <h1>My custom component</h1>
+      <button onClick={() => {props.updateFilter({key: 'Substrate', value: 'wood', action: 'ADD'})}}>Set Substrate to wood</button>
+      {_.get(props.filter, 'query.must.Substrate[0]') == 'wood' && <span>Wood selected</span>}
+    </div>
+  )
+}
+let widgets = {
+  custom: {
+    component: myCustomWidget
+  }
+};
+
 class Demo extends Component {
   constructor(props) {
     super(props);
@@ -50,7 +66,7 @@ class Demo extends Component {
     return <div>
       <div style={{lineHeight:'20px', padding:'20px', background:'deepskyblue', color: 'white'}}>react-occurrence-browser Demo</div>
       <div style={style}>
-        <OccurrenceBrowser endpoint={this.state.endpoint} config={{mapStateToUrl: true, fieldConfig: fieldConfig}}/>
+        <OccurrenceBrowser endpoint={this.state.endpoint} config={{mapStateToUrl: true, fieldConfig: fieldConfig, widgets: widgets}}/>
       </div>
     </div>
   }

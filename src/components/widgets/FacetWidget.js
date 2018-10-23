@@ -1,276 +1,359 @@
 import React, { Component } from "react";
 import _ from "lodash";
-import axios from "axios";
-import injectSheet from "react-jss";
-
-import Suggest from "../Suggest";
 import StateContext from "../../StateContext";
+import injectSheet from "react-jss";
+import FacetList from "./FacetList";
 import WidgetContainer from "./WidgetContainer";
 import WidgetHeader from "./WidgetHeader";
 import LoadBar from "./LoadBar";
-import FacetItem from "./FacetItem";
-import FacetList from "./FacetList";
-import FacetOptions from "./FacetOptions";
 
-/**
- * What behaviour do i strive for?
- * the autocomplete is sort of a headache. it is always unclear how to handle overflows with popups.
- * Moving selection and deselction into an apply area, will burden the servers less (than firering a query on every interaction)
- * paginate facets and search results.
- *
- * If something is selected then those and the top suggestions shows (as currently)
- * if the user deselects/selects something they need to apply the change.
- * If the user search for something then use the box itself to show the results. with pagination. Essentially a filtered search. Could be driven of the index to support counts.
- *
- * so searchbar
- * results - either: facets OR selected(+facets?) OR search results
- * when clicking/selecting/deselcting results then enter selection mode where there are checkboxes and an apply/cancel button.
- * paginate result list (both facets, selected and search results)
- *
- * options when creating: add search (only makes sense if many options) Allow negated? page size.
- * search should always be within what is in the subset of the index. hence ot makes beste sense to try to do it from the index itself.
- *
- * header props: title, menu component; api: actions (collapse e.g.)
- * actions (clear/all) + n selected + apply? + cancel?
- * search + options + pagination/more.
- *
- * list comp takes a list of options. and which are selected? Allows the user to change selection with callbacks that update the selected list. pagination. all. sorting. pagesize
- * selction comp: has search, ajax and list. has apply and cancel. defaults to showing top facets.
- *                can decide to paginate or show all (and reshuffle order)
- *
- */
 const styles = {
-  widgetSearch: {
+  search: {
     marginTop: 24,
+    marginBottom: 8,
     border: "1px solid #eee",
     borderWidth: "1px 0",
-    position: "relative",
-    "& input": {
-      border: "1px solid transparent",
-      display: "block",
-      width: "100%",
-      padding: "12px 60px 12px 24px",
-      fontSize: 14,
-      fallbacks: [
-        {
-          border: "none"
-        }
-      ],
-      borderWidth: "1px 0"
-    },
-    "& input:focus": {
+    position: "relative"
+  },
+  input: {
+    border: "1px solid transparent",
+    display: "block",
+    width: "100%",
+    padding: "12px 60px 12px 24px",
+    fontSize: 14,
+    fallbacks: [
+      {
+        border: "none"
+      }
+    ],
+    borderWidth: "1px 0",
+    "&:focus": {
       outline: "none",
       background: "#fbfbfb",
       borderBottomColor: "deepskyblue"
     }
+  },
+  noResults: {
+    fontSize: 12,
+    color: "#aaa",
+    padding: "12px 24px"
+  },
+  filterInfo: {
+    margin: '6px 24px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    fontSize: 10,
+    lineHeight: '14px',
+    '& >*': {
+      display: 'inline-block',
+    }
+  },
+  filterInfoText: {
+    textTransform: 'uppercase',
+    color: '#636d72'
+  },
+  filterAction: {
+    color: '#1785fb'
   }
 };
 
-function asArray(value) {
-  if (_.isUndefined(value)) {
-    return [];
-  } else if (_.isArray(value)) {
-    return value;
-  } else {
-    return [value];
-  }
-}
-
-function identity(props) {
-  return <span>TEST: {props.id}</span>;
-}
-
-class FacetWidget extends Component {
+class FacetOptions extends Component {
   constructor(props) {
     super(props);
 
-    this.handleChange = this.handleChange.bind(this);
-    this.updateFacets = this.updateFacets.bind(this);
-    this.formatOption = this.formatOption.bind(this);
-    this.onSelect = this.onSelect.bind(this);
+    this.cancelPromises = this.cancelPromises.bind(this);
+    this.handleInputChange = this.handleInputChange.bind(this);
+    this.handleSelectChange = this.handleSelectChange.bind(this);
+    this.onKeyDown = this.onKeyDown.bind(this);
+    this.cancel = this.cancel.bind(this);
+    this.apply = this.apply.bind(this);
+    this.selectAll = this.selectAll.bind(this);
 
-    this.state = _.merge(
-      {},
-      { value: "", expanded: true, displayName: identity },
-      this.props.options
-    );
+    this.getFilterFacets = this.getFilterFacets.bind(this);
+    this.getSearchResults = this.getSearchResults.bind(this);
+    this.getItems = this.getItems.bind(this);
+
+    //this.getItemsFromResults = this.getItemsFromResults.bind(this);
+    let fieldFilter = _.get(this.props.filter, `query.must.${this.props.config.filter.name}`, []);
+
+    this.state = {
+      hasSelectionChanged: false,
+      isDirty: false,
+      newSelected: fieldFilter,
+      selected: fieldFilter,
+      highlightIndex: undefined,
+      limit: 5,
+      collapsed: true,
+      value: "",
+      items: []
+    };
   }
 
   componentDidMount() {
-    this.updateFacets();
-    // OccurrenceStore.on('change', this.getOccurrences);
+    this._mounted = true;
+    this.getFilterFacets();
   }
 
   componentWillUnmount() {
-    // Cancel fetch
-    /*
-    Warning: Can't call setState (or forceUpdate) on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in the componentWillUnmount method.
-    in FreeText (at SearchBar.js:247)
-    in div (at ModalBlocker.js:13)
-    in div (at ModalBlocker.js:12)
-    in div (at ModalBlocker.js:10)
-    in Modal (at ModalBlocker.js:9)
-    in ModalBlocker (at SearchBar.js:246)
-    */
+    this.cancelPromises();
+    this._mounted = false;
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.filter.hash !== this.props.filter.hash) {
-      this.updateFacets();
+      this.cancelPromises();
+      let fieldFilter = _.get(
+        this.props.filter,
+        `query.must.${this.props.config.filter.name}`,
+        []
+      );
+      this.setState({ value: '', isDirty: false, hasSelectionChanged: false, selected: fieldFilter, newSelected: fieldFilter }, this.getFilterFacets);
     }
   }
 
-  updateFacets() {
-    return;
-    let esEndpoint = this.props.appSettings.esEndpoint;
+  cancelPromises() {
+    if (this.facetPromise && typeof this.facetPromise.cancel === 'function') {
+      this.facetPromise.cancel();
+    }
+    if (this.searchPromise && typeof this.searchPromise.cancel === 'function') {
+      this.searchPromise.cancel();
+    }
+  }
 
-    let promises = [];
-    let filter = _.merge({}, this.props.filter.query);
-    let query, queryFilter;
-    let must = _.get(this.props.filter, "query.must", {});
+  /**
+   * get facets for filter, with a facetLimit equal to filter length or, if none selected, a fixed size (15)
+   */
+  getFilterFacets() {
+    // if nothing is selected then ask for a default limit of facets. else ask for selected facets only.
+    let limit = this.state.selected.length || this.state.limit;
 
-    let esField = this.props.options.field;
-
-    if (must[this.props.options.field]) {
-      //let p1 = fetch('//api.gbif.org/v1/occurrence/search?' + queryString.stringify(filter, { indices: false, allowDots: true }));
-
-      queryFilter = this.props.appSettings.esRequest.build(
-        this.props.filter.query
-      );
-      query = {
-        size: 0,
-        aggs: {
-          facets: {
-            terms: { field: esField, size: 5 } //burde egentlig være
-          }
-        }
-      };
-      query = _.merge(query, queryFilter);
-      let p1 = axios.post(esEndpoint + "/_search", query);
-
-      promises.push(p1);
-      this.setState({ loading: true });
-      p1.then(
-        result => {
-          this.setState({
-            facets: result.data.aggregations.facets.buckets,
-            count: result.data.hits.total
-          });
-        },
-        // Note: it's important to handle errors here
-        // instead of a catch() block so that we don't swallow
-        // exceptions from actual bugs in components.
-        error => {
-          this.setState({ error: true });
-        }
-      );
+    // should facets be shown when nothing is selected?
+    if (this.props.config.hideFacetsWhenAll && this.state.selected.length === 0) {
+      this.setState({ filteredItems: [], total: 0 });
+      return;
     }
 
-    if (this.props.options.showSuggestions) {
-      if (must[this.props.options.field]) {
-        delete filter.must[this.props.options.field];
+    let DisplayFormater = this.props.config.filter.displayName;
+    let facetPromise = this.props.config.facets(this.props.filter.query, limit);
+    this.facetPromise = facetPromise;
+    facetPromise.then(
+      result => {
+        if (this._mounted) {
+          let results = result.results.map(e => ({
+            count: e.count,
+            value: <DisplayFormater id={e.value} />,
+            id: e.value
+          }));
+          // Even if there is no results, then show the selected items with zero counts
+          for (var i = 0; i < this.state.selected.length; i++) {
+            let val = this.state.selected[i];
+            if (_.findIndex(results, { id: val }) === -1) {
+              results.push({
+                count: 0,
+                value: <DisplayFormater id={val} />,
+                id: val
+              });
+            }
+          }
+          let items = this.getItems(results, this.state.selected);
+          let newState = { filteredItems: items, total: result.count }
+          if (!this.state.isDirty) {
+            newState.items = _.cloneDeep(items);
+          }
+          this.setState(newState);
+        }
+      },
+      error => {
+        console.error(error);
+        if (this._mounted) {
+          this.setState({ error: true });
+        }
       }
-      // let p2 = fetch('//api.gbif.org/v1/occurrence/search?' + queryString.stringify(filter, { indices: false, allowDots: true }));
-
-      queryFilter = this.props.appSettings.esRequest.build(filter);
-      query = {
-        size: 0,
-        aggs: {
-          facets: {
-            terms: { field: esField, size: 20 }
-          }
-        }
-      };
-      query = _.merge(query, queryFilter);
-      let p2 = axios.post(esEndpoint + "/_search", query);
-
-      p2.then(
-        result => {
-          this.setState({
-            multiFacets: result.data.aggregations.facets.buckets,
-            total: result.data.hits.total
-          });
-        },
-        // Note: it's important to handle errors here
-        // instead of a catch() block so that we don't swallow
-        // exceptions from actual bugs in components.
-        error => {
-          this.setState({ error: true });
-        }
-      );
-      promises.push(p2);
-    }
-
-    Promise.all(promises)
-      .then(() => {
-        this.setState({ loading: false });
-      })
-      .catch(() => {
-        this.setState({ loading: false });
-      });
-  }
-
-  handleChange(event) {
-    this.setState({ value: event.target.value });
-  }
-
-  formatOption(id, count, total, action, active) {
-    action = action || "ADD";
-    let Formater = this.state.displayName;
-    return (
-      <li key={id}>
-        <FacetItem
-          value={<Formater id={id} />}
-          count={count}
-          total={total}
-          active={active}
-          showSelectBox={false}
-          selected={false}
-          onChange={() =>
-            this.props.updateFilter({
-              key: this.props.options.field,
-              value: id,
-              action: action
-            })
-          }
-        />
-      </li>
     );
   }
 
-  onSelect(val) {
-    console.log("selected", val);
-    this.setState({ value: "" });
+  getSearchResults() {
+    this.setState({ showSearchResults: true });
+    let DisplayFormater = this.props.config.filter.displayName;
+    //remove filter for this field (to give results other than the already selected) aka multiselect
+    let filter = _.clone(this.props.filter.query);
+    _.unset(filter, `must.${this.props.config.filter.name}`);
+    let searchPromise = this.props.config.suggest.query(this.state.value, this.props.filter.query, this.state.limit);
+    this.searchPromise = searchPromise;
+    searchPromise.then(
+      result => {
+        if (this._mounted) {
+          let results = result.results.map(e => ({
+            count: e.count,
+            value: <DisplayFormater id={e.value} />,
+            id: e.value
+          }));
+          let items = this.getItems(results, this.state.newSelected);
+          this.setState({ items: items, searchTotal: result.count, isDirty: true });
+        }
+      },
+      error => {
+        console.error(error);
+        if (this._mounted) {
+          this.setState({ error: true });
+        }
+      }
+    );
+  }
+
+  getItems(list, selected) {
+    let selectedMap = _.keyBy(selected, _.identity);
+    let items = list.map(e => ({
+      count: e.count,
+      value: e.value,
+      id: e.id,
+      selected: Boolean(selectedMap[e.id])
+    }));
+    return items;
+  }
+
+  updateSelection(items, selected) {
+    let selectedMap = _.keyBy(selected, _.identity);
+    items.forEach(e => { e.selected = typeof selectedMap[e.id] !== 'undefined' });
+    return items;
+  }
+
+  handleInputChange(event) {
+    this.setState({ value: event.target.value, isDirty: true, highlightIndex: undefined }, this.getSearchResults);
+  }
+
+  cancel() {
+    this.setState({
+      isDirty: false,
+      hasSelectionChanged: false,
+      newSelected: this.state.selected,
+      value: '',
+      highlightIndex: undefined
+    });
+  }
+
+  apply() {
     this.props.updateFilter({
-      key: this.props.options.field,
-      value: val,
-      action: "ADD"
+      key: this.props.config.filter.name,
+      action: 'UPDATE',
+      value: this.state.newSelected
+    })
+  }
+
+  selectAll() {
+    this.props.updateFilter({
+      key: this.props.config.filter.name,
+      action: 'CLEAR'
+    })
+  }
+
+  onKeyDown(event) {
+    if (event.key === 'Enter' && typeof (this.state.highlightIndex) !== 'undefined') {
+      this.handleSelectChange(this.state.items[this.state.highlightIndex]);
+    } else if (event.key === 'Enter' && !this.state.isDirty) {
+      this.getSearchResults();
+    } else if (event.key === 'Escape') {
+      let newState = { highlightIndex: undefined, isDirty: this.state.value !== '' || this.state.hasSelectionChanged };
+      this.setState(newState);
+    } else if (event.key === 'ArrowDown') {
+      let direction = 1;
+      let highlightIndex = typeof (this.state.highlightIndex) === 'undefined'
+        ? 0
+        : this.state.highlightIndex + direction;
+      highlightIndex = highlightIndex >= this.state.items.length ? 0 : highlightIndex;
+      this.setState({ highlightIndex: highlightIndex });
+    } else if (event.key === 'ArrowUp') {
+      let direction = -1;
+      let highlightIndex = typeof (this.state.highlightIndex) === 'undefined'
+        ? this.state.items.length - 1
+        : this.state.highlightIndex + direction;
+      highlightIndex = highlightIndex < 0 ? this.state.items.length - 1 : highlightIndex;
+      this.setState({ highlightIndex: highlightIndex });
+    }
+  }
+
+  handleSelectChange(item) {
+    let newSelected
+
+    //if a selected item is clicked then remove it from selection
+    if (item.selected) {
+      newSelected = _.difference(this.state.newSelected, [item.id]);
+    } else {
+      //if a unchecked item is clicked then add it to selection
+      newSelected = _.union(this.state.newSelected, [item.id]);
+    }
+    //update which items are selected
+    const items = this.updateSelection(this.state.items, newSelected);
+    this.updateSelection(this.state.items, newSelected);
+    const hasSelectionChanged = !_.isEqual(this.state.selected.sort(), newSelected.sort());
+    this.setState({
+      items: items,
+      newSelected: newSelected,
+      hasSelectionChanged: hasSelectionChanged,
+      isDirty: true,
+      highlightIndex: undefined
     });
   }
 
   render() {
+    const { classes } = this.props;
+    const isDirty = this.state.isDirty;
+    const hasSelectionChanged = this.state.hasSelectionChanged;
+    const items = isDirty
+      ? this.state.items || []
+      : this.state.filteredItems || [];
+    const showNoResults = !this.props.config.hideFacetsWhenAll || (this.state.filteredItems && this.state.filteredItems.length > 0);
+
     return (
-      <StateContext.Consumer>
-        {({ api }) => (
-          <WidgetContainer>
-            {this.state.loading && <LoadBar />}
-            <div className="filter__content">
-              <WidgetHeader>{this.props.config.filter.name}</WidgetHeader>
-              <FacetOptions config={this.props.config}/>
+      <WidgetContainer>
+        {this.state.loading && <LoadBar />}
+        <div className="filter__content">
+          <WidgetHeader>{this.props.config.filter.name}</WidgetHeader>
+          <div>
+            <div className={classes.search}>
+              <input
+                type="text"
+                placeholder="Search"
+                className={classes.input}
+                value={this.state.value}
+                onChange={this.handleInputChange}
+                onKeyDown={this.onKeyDown}
+              />
             </div>
-          </WidgetContainer>
-        )}
-      </StateContext.Consumer>
+
+            <div className={classes.filterInfo}>
+              {this.state.newSelected.length > 0 && <span>{this.state.newSelected.length} selected</span>}
+              {this.state.newSelected.length === 0 && <span>All selected</span>}
+              {!hasSelectionChanged && this.state.selected.length > 0 && <span className={classes.filterAction} onClick={this.selectAll} role="button">Select all</span>}
+            </div>
+            <FacetList
+              showCheckbox={isDirty}
+              showAllAsSelected={!isDirty && this.state.newSelected.length === 0}
+              totalCount={this.state.total || 0}
+              items={items || []}
+              highlightIndex={this.state.highlightIndex}
+              onChange={this.handleSelectChange}
+            />
+
+            {showNoResults && items.length === 0 && (
+              <div className={classes.noResults}>
+                No results found - try to loosen your filters
+          </div>
+            )}
+            {isDirty && <div className={classes.filterInfo}>
+              {/* <span><span>l</span><span></span>r</span> */}
+              <a className={classes.filterAction} role="button" onClick={this.cancel}>Cancel</a>
+              {hasSelectionChanged && <a className={classes.filterAction} onClick={this.apply} role="button">Apply</a>}
+            </div>}
+            {/* <pre style={{ fontSize: '10px' }}>
+          {JSON.stringify(this.state, null, 2)}
+        </pre> */}
+          </div>
+        </div>
+      </WidgetContainer>
     );
   }
 }
 
-let hocWidget = props => (
-  <StateContext.Consumer>
-    {({ appSettings }) => {
-      return <FacetWidget {...props} appSettings={appSettings} />;
-    }}
-  </StateContext.Consumer>
-);
-
-export default injectSheet(styles)(hocWidget);
+export default injectSheet(styles)(FacetOptions);

@@ -24,13 +24,14 @@ class OccurrenceSearch extends Component {
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.updateFilter = this.updateFilter.bind(this);
     this.updateStateQuery = this.updateStateQuery.bind(this);
+    this.setQuery = this.setQuery.bind(this);
     this.updateView = this.updateView.bind(this);
     this.updateWidgets = this.updateWidgets.bind(this);
     this.hasWidget = this.hasWidget.bind(this);
     this.setOpenMenu = this.setOpenMenu.bind(this);
     this.toggleWidgets = this.toggleWidgets.bind(this);
 
-    let appSettings = configBuilder({esEndpoint: this.props.endpoint});
+    let appSettings = configBuilder({widgets: this.props.config.widgets, esEndpoint: this.props.endpoint});
     
     let query = {must: {}, must_not: {}};
     
@@ -48,6 +49,7 @@ class OccurrenceSearch extends Component {
       activeView: 'TABLE',
       api: {
         updateFilter: this.updateFilter,
+        setQuery: this.setQuery,
         updateWidgets: this.updateWidgets,
         hasWidget: this.hasWidget,
         toggleWidgets: this.toggleWidgets,
@@ -105,6 +107,18 @@ class OccurrenceSearch extends Component {
 
   updateFilter(options) {
     const query = stateHelper.getUpdatedFilter(this.state.filter.query, options);
+    if (this.props.config.mapStateToUrl) {
+      if (stateHelper.isEmptyQuery(query)) {
+        history.push(window.location.pathname);
+      } else {
+        history.push(window.location.pathname + '?filter=' + stateHelper.getFilterAsURICompoment(query));
+      }
+    } else {
+      this.updateStateQuery(query);
+    }
+  }
+
+  setQuery(query) {
     if (this.props.config.mapStateToUrl) {
       if (stateHelper.isEmptyQuery(query)) {
         history.push(window.location.pathname);

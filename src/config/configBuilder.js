@@ -146,6 +146,7 @@ export default config => {
     }
   ];
   stdWidgets = _.keyBy(stdWidgets, 'filter.name');
+  stdWidgets = _.merge({}, stdWidgets, config.widgets);
 
   let widgets = stdWidgets;//and add custom widgets and filter out stdwidgets not selected in user config.
 

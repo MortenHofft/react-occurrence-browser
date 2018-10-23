@@ -9,6 +9,11 @@ class WidgetDrawer extends Component {
   
   render() {
     let WidgetComponent = this.props.appSettings.widgets.dataset.component;
+    let widgets = Object.keys(this.props.appSettings.widgets).map((name) => {
+      let w = this.props.appSettings.widgets[name];
+      let WidgetComponent = w.component;
+      return <WidgetComponent key={name} filter={this.props.filter} updateFilter={this.props.updateFilter} config={w} />
+    });
     return (
         <div>
           <section>
@@ -16,10 +21,12 @@ class WidgetDrawer extends Component {
               <WidgetHeader>Occurrences</WidgetHeader>
               <div style={{margin: '0 20px 20px 20px', fontSize: '26px', fontWeight: 500}}><Count filter={this.props.filter} /> </div>
             </WidgetContainer>
-            <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.recordedBy}/>
+            
+            {widgets}
+            {/* <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.recordedBy}/>
             <WidgetComponent filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.dataset}/>
             <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.Substrate}/>
-            <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.institutionCode}/>
+            <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} config={this.props.appSettings.widgets.institutionCode}/> */}
             
             
             {/* <FacetWidget filter={this.props.filter} updateFilter={this.props.updateFilter} options={{field: 'substrate', displayName: this.props.displayName('substrate'), showSuggestions: true, search: false, autoComplete: {

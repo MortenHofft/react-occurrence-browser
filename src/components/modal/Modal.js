@@ -2,8 +2,6 @@ import ReactDOM from "react-dom";
 import React from "react";
 import StateContext from "../../StateContext";
 
-const modalRoot = document.body;
-
 class Modal extends React.Component {
   constructor(props) {
     super(props);

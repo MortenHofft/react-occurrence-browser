@@ -4,6 +4,7 @@ import ModalBlocker from "./ModalBlocker";
 import injectSheet from "react-jss";
 import objectHash from "object-hash";
 import StateContext from "../../StateContext";
+import stateHelper from "../../stateHelper";
 
 const styles = {};
 
@@ -27,14 +28,10 @@ class ModalWidget extends Component {
     this.state = { modalFilter: props.filter };
   }
 
-  componentDidMount() {}
+  componentDidMount() { }
 
   componentWillUnmount() {
     // Cancel fetch callback?
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.setState({ value: nextProps.value });
   }
 
   componentDidUpdate(prevProps) {
@@ -43,44 +40,19 @@ class ModalWidget extends Component {
     }
   }
 
-  handleHide(updateFilter) {
-    // if (this.state.modalFilter.query[this.props.field]) {
-    //   updateFilter(
-    //     this.props.field,
-    //     this.state.modalFilter.query[this.props.field],
-    //     "UPDATE"
-    //   );
-    // } else {
-    //   updateFilter(this.props.field, null, "CLEAR");
-    // }
+  handleHide() {
+    this.props.api.setQuery(this.state.modalFilter.query);
     this.props.onClose();
   }
 
-  updateModalFilter(param, value, action) {
-    let paramValues = asArray(this.state.modalFilter.query[param]);
-    if (action === "CLEAR") {
-      paramValues = "";
-    } else if (action === "ADD") {
-      paramValues.push(value);
-    } else if (action === "REMOVE") {
-      _.remove(paramValues, function(n) {
-        return n === value;
-      });
-    } else {
-      paramValues = [value];
-    }
-    let query = _.merge({}, this.state.modalFilter.query, {
-      [param]: paramValues
-    });
-    if (!paramValues) {
-      delete query[param];
-    }
+  updateModalFilter(options) {
+    let query = stateHelper.getUpdatedFilter(this.state.modalFilter.query, options);
     let filter = { hash: objectHash(query), query: query };
-    this.setState({ modalFilter: filter });
+    this.setState({ modalFilter: filter }, this.handleHide);
   }
 
   render() {
-    const { api, appSettings, filter } = this.props;
+    const { api, appSettings } = this.props;
     let WidgetComponent = appSettings.widgets.dataset.component;
     return (
       <ModalBlocker
@@ -88,15 +60,7 @@ class ModalWidget extends Component {
           this.handleHide(api.updateFilter);
         }}
       >
-        HEJHEJ
-        {/* <FreeText
-          filter={this.state.modalFilter}
-          updateFilter={(a, b, c) => {
-            this.updateModalFilter(a, b, c, updateFilter);
-          }}
-          options={config.widgets.filters[this.props.field].options}
-        /> */}
-        <WidgetComponent filter={filter} updateFilter={api.updateFilter} config={appSettings.widgets.dataset}/>
+        <WidgetComponent filter={this.state.modalFilter} updateFilter={this.updateModalFilter} config={appSettings.widgets.dataset} />
       </ModalBlocker>
     );
   }
