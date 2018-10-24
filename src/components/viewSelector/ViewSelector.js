@@ -3,6 +3,7 @@ import injectSheet from "react-jss";
 import _ from "lodash";
 import StateContext from "../../StateContext";
 import Icon from "../widgets/Icon";
+import DropDown from "../dropDown/DropDown";
 
 const item = {
   display: 'inline-block',
@@ -53,31 +54,7 @@ const styles = {
     '& svg': {
       float: 'right',
     }
-  },
-  dropdown: {
-    position: 'absolute',
-    padding: 0,
-    margin: 0,
-    background: 'white',
-    borderRadius: '4px',
-    border: '1px solid #ddd',
-    fontSize: '12px',
-    boxShadow: '0 0 2px 0 rgba(0,0,0,.24), 0 8px 16px 0 rgba(0,0,0,.16)',
-    width: 150,
-    right: 0,
-    listStyle: 'none',
-    textAlign: 'left',
-    zIndex: 100,
-    top: 41,
-    right: 8,
-    '& li': {
-      padding: '12px 16px',
-      borderBottom: '1px solid #eee',
-      '&:last-child': {
-        border: 'none'
-      }
-    }
-  },
+  }
 };
 
 class ViewSelector extends Component {
@@ -100,11 +77,20 @@ class ViewSelector extends Component {
           <i role="button" onClick={() => { api.setOpenMenu(openMenu === this.state.menuId || this.state.menuId) }}>
             <Icon name="Search" height={33} width={18} />
           </i>
-          {openMenu === this.state.menuId && <ul className={classes.dropdown}>
+          <DropDown menuId={this.state.menuId} top={41}>
+            <li role="button" onClick={() => { api.toggleWidgets(); }}><span>Toggle widgets</span></li>
+            <li role="button" onClick={() => { alert('Open a modal where the user can choose which widgets to show'); }}><span>Add widgets</span></li>
+            <li role="button" onClick={() => { alert('A view similar to table, gallery and map where you can compose your own view. metrics, maps, lists'); }}><span>Dashboard</span></li>
+          </DropDown>
+          {/* {openMenu === this.state.menuId && 
+          <React.Fragment>
+          <div className={classes.backDrop} onClick={() => {api.setOpenMenu()}}></div>
+          <ul className={classes.dropdown}>
             <li role="button" onClick={() => { api.toggleWidgets(); api.setOpenMenu('sdf'); }}><span>Toggle widgets</span></li>
             <li role="button" onClick={() => { alert('Open a modal where the user can choose which widgets to show'); }}><span>Add widgets</span></li>
             <li role="button" onClick={() => { alert('A view similar to table, gallery and map where you can compose your own view. metrics, maps, lists'); }}><span>Dashboard</span></li>
-          </ul>}
+          </ul>
+          </React.Fragment>} */}
         </li>
       </ul>
     );

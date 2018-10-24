@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { Component } from 'react';
 import injectSheet from 'react-jss';
 import Icon from './Icon';
+import DropDown from '../dropDown/DropDown';
+import StateContext from "../../StateContext";
+import { render } from 'inferno';
 
 const styles = {
   header: {
@@ -10,7 +13,9 @@ const styles = {
     marginBottom: 12,
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
+    position: 'relative'
+    
   },
   ellipsis: {
     color: '#2e3c43',
@@ -23,19 +28,41 @@ const styles = {
     overflow: 'hidden'
   },
   more: {
-    fill: '#3198de'
+    fill: '#3198de',
   }
 };
 
-function WidgetHeader(props) {
-  return (
-    <div className={props.classes.header}>
-      <h3 className={props.classes.ellipsis}>{props.children}</h3>
-      <a className={props.classes.more}>
-        <Icon name="more"/>
-      </a>
-    </div>
-  );
+class WidgetHeader extends Component {
+  constructor(props) {
+    super(props);
+    this.menuId = 'menu_' + Math.random();
+  }
+
+  render() {
+    const { classes, api, children, options } = this.props;
+    return (
+      <div className={classes.header} >
+        <h3 className={classes.ellipsis}>{children}</h3>
+        {options &&
+          <React.Fragment>
+            <span className={classes.more} onClick={() => { api.setOpenMenu(this.menuId) }}>
+              <Icon name="more" />
+            </span>
+            <DropDown menuId={this.menuId} top={24}>{options}</DropDown>
+            
+          </React.Fragment>
+        }
+      </div>
+    );
+  }
 }
 
-export default injectSheet(styles)(WidgetHeader);
+let HOC = props => (
+  <StateContext.Consumer>
+    {({ openMenu, api }) => {
+      return <WidgetHeader {...props} api={api} openMenu={openMenu} />;
+    }}
+  </StateContext.Consumer>
+);
+
+export default injectSheet(styles)(HOC);

@@ -3,7 +3,8 @@ import React from "react";
 import fieldFormatter from "../components/fieldFormatter";
 import EsRequest from '../esRequest';
 import ApiEs from './api_es';
-import {FacetWidget} from '../components/widgets';
+import _ from 'lodash';
+import {FacetWidget, EventDateWidget} from '../components/widgets';
 
 export default config => {
   let appConfig = {};
@@ -33,7 +34,20 @@ export default config => {
         .get(appConfig.endpoints.species + "/" + id)
         .then(result => ({ title: result.data.scientificName }))
     ),
-    BasisOfRecordTitle: fieldFormatter(id => id.toLowerCase().replace("_", " "))
+    BasisOfRecordTitle: fieldFormatter(id => id.toLowerCase().replace("_", " ")),
+    year: fieldFormatter(id => {
+      if (typeof id === 'object') {
+        if (_.isUndefined(id.gte)) {
+          return `before ${id.lte}`;  
+        } else if(_.isUndefined(id.lte)) {
+          return `after ${id.gte}`;  
+        } else if(id.gte === id.lte) {
+          return id.gte;
+        }
+        return `${id.gte}-${id.lte}`;
+      }
+      return id;
+    })
   };
 
   appConfig.fieldMapping = {
@@ -42,9 +56,6 @@ export default config => {
     dataset: 'datasetKey',
     Substrate: 'dynamicProperties.Substrate.keyword'
   };
-
-  const esRequest = new EsRequest(config.esEndpoint, appConfig.fieldMapping);
-  const api_es = new ApiEs(config.esEndpoint, appConfig.fieldMapping);
 
   let stdFilters = [
     {
@@ -71,12 +82,23 @@ export default config => {
     {
       name: 'recordedBy',
       txName: 'tx.filters.recordedBy',
-      txDescription: 'tx.filters.recordedByeDescription',
+      txDescription: 'tx.filters.recordedByDescription',
       mapping: 'recordedBy', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
       displayName: displayName.Identity
+    },
+    {
+      name: 'year',
+      txName: 'tx.filters.year',
+      txDescription: 'tx.filters.yearDescription',
+      mapping: 'year',
+      displayName: displayName.year,
+      type: 'range'
     }
   ];
   stdFilters = _.keyBy(stdFilters, 'name');
+
+  const esRequest = new EsRequest(config.esEndpoint, appConfig.fieldMapping);
+  const api_es = new ApiEs(config.esEndpoint, stdFilters);
 
   let stdSearch = [
     {
@@ -108,6 +130,13 @@ export default config => {
 
   let stdWidgets = [
     {
+      name: 'eventDate',
+      type: 'FACET',//type or better the component itself.
+      filter: stdFilters.eventDate,
+      component: EventDateWidget
+    },
+    {
+      name: 'dataset',
       type: 'FACET',//type or better the component itself.
       filter: stdFilters.dataset,
       suggest: stdSearch.dataset,
@@ -117,6 +146,7 @@ export default config => {
       component: FacetWidget
     },
     {
+      name: 'recordedBy',
       type: 'FACET',//type or better the component itself.
       filter: stdFilters.recordedBy,
       suggest: stdSearch.recordedBy,
@@ -127,6 +157,7 @@ export default config => {
       hideFacetsWhenAll: true
     },
     {
+      name: 'Substrate',
       type: 'FACET',//type or better the component itself.
       filter: stdFilters.Substrate,
       suggest: stdSearch.Substrate,
@@ -136,6 +167,7 @@ export default config => {
       component: FacetWidget
     },
     {
+      name: 'institutionCode',
       type: 'FACET',//type or better the component itself.
       filter: stdFilters.institutionCode,
       suggest: stdSearch.institutionCode,
@@ -145,7 +177,7 @@ export default config => {
       component: FacetWidget
     }
   ];
-  stdWidgets = _.keyBy(stdWidgets, 'filter.name');
+  stdWidgets = _.keyBy(stdWidgets, 'name');
   stdWidgets = _.merge({}, stdWidgets, config.widgets);
 
   let widgets = stdWidgets;//and add custom widgets and filter out stdwidgets not selected in user config.

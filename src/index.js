@@ -69,7 +69,6 @@ class OccurrenceSearch extends Component {
 
   setOpenMenu(menuId) {
     this.setState({openMenu: menuId});
-    console.log(menuId);
   }
 
   updateWidgets(field, action) {

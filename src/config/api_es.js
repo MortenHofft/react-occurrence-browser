@@ -2,7 +2,7 @@ import bodybuilder from 'bodybuilder';
 import _ from 'lodash';
 import axios from 'axios';
 
-function EsRequest(esEndpoint, fieldMapping) {
+function EsRequest(esEndpoint, filters) {
   function build(query) {
     return compose(query).build();
   }
@@ -11,11 +11,22 @@ function EsRequest(esEndpoint, fieldMapping) {
     query = query || {};
     let builder = bodybuilder();
     _.forOwn(query.must, function (value, field) {
-      field = fieldMapping[field] || field;
-      builder.filter('terms', field, [].concat(value));
+      let type = filters[field].type;
+      let esField = filters[field].mapping || field;
+      if (type === 'range') {
+        builder.filter('bool', b => {
+          let a = b;
+          value.forEach(v => {
+            a = a.orFilter('range', esField, v);
+          });
+          return a;
+        });
+      } else {
+        builder.filter('terms', esField, [].concat(value));
+      }
     });
-    _.forOwn(query.must_not, function (value, field) {
-      builder.filter('terms', field, [].concat(value));
+    _.forOwn(query.must_not, function (value, esField) {
+      builder.filter('terms', esField, [].concat(value));
     });
     if (_.isString(query.freetext) && query.freetext !== '') {
       builder.query('match', 'freetext', query.freetext);
