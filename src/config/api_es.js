@@ -11,18 +11,33 @@ function EsRequest(esEndpoint, filters) {
     query = query || {};
     let builder = bodybuilder();
     _.forOwn(query.must, function (value, field) {
-      let type = filters[field].type;
       let esField = filters[field].mapping || field;
-      if (type === 'range') {
-        builder.filter('bool', b => {
-          let a = b;
-          value.forEach(v => {
-            a = a.orFilter('range', esField, v);
-          });
-          return a;
-        });
+      if (value.length == 1) {
+        // only one value for field
+        // decide if it should be added as a term, range or something else filter
+        let val = value[0];
+        if (_.get(val, 'gte')) {
+          //this looks like a range query
+          builder.filter('range', esField, val);
+        } else {
+          builder.filter('term', esField, val);
+        }
       } else {
-        builder.filter('terms', esField, [].concat(value));
+        // multiple values for field
+        // decide if it should be added as a term, range or something else filter
+        // decide if range query based on first item. This isn't exactly ideal as it requires the filter producers to know this.
+        if (_.get(value, '[0].gte')) {
+          // this looks like a range query - add a nested or filter for the ranges
+          builder.filter('bool', b => {
+            let a = b;
+            value.forEach(v => {
+              a = a.orFilter('range', esField, v);
+            });
+            return a;
+          });
+        } else {
+          builder.filter('terms', esField, [].concat(value));
+        }
       }
     });
     _.forOwn(query.must_not, function (value, esField) {

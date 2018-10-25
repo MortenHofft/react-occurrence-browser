@@ -6,7 +6,7 @@ const styles = {
     background: 'white',
     marginBottom: 6,
     borderRadius: 3,
-    overflow: 'hidden'
+    overflowY: 'hidden'
   }
 };
 
