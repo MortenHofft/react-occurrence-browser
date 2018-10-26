@@ -6,6 +6,10 @@ import WidgetHeader from "./WidgetHeader";
 import LoadBar from "./LoadBar";
 import ColChart from "../dumbChart/ColChart";
 
+ const keyField = 'year';//sampleSizeValue
+//const keyField = 'month';
+// const keyField = 'dynamicProperties.sampleSizeValue.keyword';
+
 const styles = {
   inputArea: {
     border: '1px solid #eee',
@@ -55,15 +59,19 @@ class EventDateWidget extends Component {
     this.updateRange = this.updateRange.bind(this);
     this.onBlur = this.onBlur.bind(this);
     this.apply = this.apply.bind(this);
+    this.updateCounts = this.updateCounts.bind(this);
 
+    
     this.state = {
-      start: '',
-      end: ''
+      start: _.get(props.filter, `query.must.${keyField}[0].gte`, ''),
+      end: _.get(props.filter, `query.must.${keyField}[0].lte`, ''),
+      isRange: true
     };
   }
 
   componentDidMount() {
     this._mounted = true;
+    this.updateCounts();
   }
 
   componentWillUnmount() {
@@ -71,6 +79,16 @@ class EventDateWidget extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    if (prevProps.filter.hash !== this.props.filter.hash) {
+      this.updateCounts();
+    }
+  }
+
+  updateCounts() {
+    this.props.search.histogramBuckets(this.props.filter.query, keyField, 10, 1).then(result => {
+      result.buckets = result.buckets.map(x => ({count: x.doc_count, start: x.key, end: x.key + result.interval-1}));
+      this.setState({histogram: result});
+    });
   }
 
   handleStartChange(isStart, event) {
@@ -104,13 +122,13 @@ class EventDateWidget extends Component {
     if (!this.state.isRange) {
       end = start;
     }
-    this.props.updateFilter({action: 'UPDATE', key: 'year', value: {gte: start, lte: end}});
+    this.props.updateFilter({action: 'UPDATE', key: keyField, value: {gte: start, lte: end}});
   }
 
   render() {
     const { classes } = this.props;
     const options = <li onClick={() => {this.setState({isRange: !this.state.isRange})}}>Toggle range</li>
-
+    const isFiltered = _.has(this.props.filter, `query.must.${keyField}[0].gte`);
     return (
       <WidgetContainer>
         {this.state.loading && <LoadBar />}
@@ -123,17 +141,14 @@ class EventDateWidget extends Component {
             }
           </div>
           <div className={classes.filterInfo}>
-            <span></span>
+            {isFiltered && 
+              <a role="button" onClick={() => {this.props.updateFilter({key: keyField, action: 'CLEAR'})}} className={classes.filterAction}>Select all</a>
+            }
+            {!isFiltered && <span></span>}
             <a role="button" onClick={this.apply}  className={classes.filterAction}>Apply</a>
           </div>
           <div className={classes.chartWrapper}>
-            <ColChart data={[
-              {count: 100, start: 1900, end: 1920},
-              {count: 20, start: 1921, end: 1930},
-              {count: 10, start: 1931, end: 1940},
-              {count: 50, start: 1941, end: 1950},
-              {count: 80, start: 1951, end: 1960},
-              ]} updateRange={this.updateRange}/>
+            {this.state.histogram && <ColChart data={this.state.histogram.buckets} updateRange={this.updateRange}/>}
           </div>
         </div>
       </WidgetContainer>

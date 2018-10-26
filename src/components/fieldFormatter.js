@@ -54,7 +54,7 @@ export default getData =>
       ) : (
         this.state.title
       );
-      const style = title
+      const style = typeof title !== 'undeined'
         ? {}
         : {display:'inline-block', width: '100px', height: '12px', background: '#f5f5f5'};
       return <span style={style}>{title} </span>;

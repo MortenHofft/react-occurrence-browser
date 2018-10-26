@@ -53,14 +53,14 @@ class ModalWidget extends Component {
 
   render() {
     const { api, appSettings } = this.props;
-    let WidgetComponent = appSettings.widgets.dataset.component;
+    let WidgetComponent = appSettings.widgets[this.props.widgetName].component;
     return (
       <ModalBlocker
         onClose={() => {
           this.handleHide(api.updateFilter);
         }}
       >
-        <WidgetComponent filter={this.state.modalFilter} updateFilter={this.updateModalFilter} config={appSettings.widgets.dataset} />
+        <WidgetComponent filter={this.state.modalFilter} updateFilter={this.updateModalFilter} config={appSettings.widgets[this.props.widgetName]} />
       </ModalBlocker>
     );
   }

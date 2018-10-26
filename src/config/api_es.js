@@ -11,12 +11,12 @@ function EsRequest(esEndpoint, filters) {
     query = query || {};
     let builder = bodybuilder();
     _.forOwn(query.must, function (value, field) {
-      let esField = filters[field].mapping || field;
+      let esField = _.get(filters[field], 'mapping', field);
       if (value.length == 1) {
         // only one value for field
         // decide if it should be added as a term, range or something else filter
         let val = value[0];
-        if (_.get(val, 'gte')) {
+        if (!_.isUndefined(_.get(val, 'gte'))) {
           //this looks like a range query
           builder.filter('range', esField, val);
         } else {
@@ -26,7 +26,7 @@ function EsRequest(esEndpoint, filters) {
         // multiple values for field
         // decide if it should be added as a term, range or something else filter
         // decide if range query based on first item. This isn't exactly ideal as it requires the filter producers to know this.
-        if (_.get(value, '[0].gte')) {
+        if (!_.isUndefined(_.get(value, '[0].gte'))) {
           // this looks like a range query - add a nested or filter for the ranges
           builder.filter('bool', b => {
             let a = b;
@@ -86,6 +86,53 @@ function EsRequest(esEndpoint, filters) {
         'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
       }
     }).then(response => (formatCountResults(response.data, keyField)));
+  }
+
+  function stats(appQuery, keyField) {
+    let body = compose(appQuery).build();
+    body.aggs = {
+      stats: { 'stats' : { 'field' : keyField } }
+    };
+    body.size = 0;
+    body.from = 0;
+
+    return axios.post(esEndpoint + '/_search', body, {
+      headers: {
+        'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
+      }
+    }).then(response => (response.data.aggregations.stats));
+  }
+
+  function histogram(appQuery, keyField, interval) {
+    let body = compose(appQuery).build();
+    body.aggs = {
+      histogram: { 'histogram' : { 'field' : keyField, interval: interval || 10 } }
+    };
+    body.size = 0;
+    body.from = 0;
+
+    return axios.post(esEndpoint + '/_search', body, {
+      headers: {
+        'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
+      }
+    }).then(response => (response.data.aggregations.histogram.buckets));
+  }
+
+  let decimalRanges = [];
+  [1, 10, 100, 1000, 10000, 10000, 100000].forEach(x => {
+    decimalRanges = decimalRanges.concat([1000/x, 500/x, 250/x])
+  });
+  _.remove(decimalRanges, x => (x === 2.5));
+  decimalRanges.push(0);
+
+  async function histogramBuckets(appQuery, keyField, buckets, minIntervalSize) {
+    minIntervalSize = minIntervalSize || 0;
+    let statResults = await this.stats(appQuery, keyField);    
+    let interval = (statResults.max - statResults.min)/buckets;
+    interval = _.find(decimalRanges, x => (x <= interval));
+    interval = Math.max(minIntervalSize, interval);
+
+    return histogram(appQuery, keyField, interval).then(buckets => {return {buckets: buckets, interval: interval, count: statResults.count }});
   }
 
   function suggest(appQuery, q, titleField, keyField, size) {
@@ -156,7 +203,10 @@ function EsRequest(esEndpoint, filters) {
     compose,
     build,
     count,
-    suggestCompleter
+    suggestCompleter,
+    histogram,
+    histogramBuckets,
+    stats
   }
 }
 

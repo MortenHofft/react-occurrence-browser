@@ -166,7 +166,7 @@ class Table extends Component {
           >
           </ModalFilter>
         )} */}
-        {this.state.showModalFilter && <ModalWidget onClose={this.handleHide}>TESTER</ModalWidget>}
+        {this.state.showModalFilter && <ModalWidget onClose={this.handleHide} widgetName={'dataset'}>TESTER</ModalWidget>}
       </React.Fragment>
     );
   }

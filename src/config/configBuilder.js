@@ -17,7 +17,7 @@ export default config => {
 
   let displayName = {
     Identity: (props) => {
-      return <span>{props.id}</span>;
+      return <span>{typeof props.id !== 'object' ? props.id : JSON.stringify(props.id) }</span>;
     },
     datasetKey: fieldFormatter(id =>
       axios

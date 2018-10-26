@@ -43,15 +43,18 @@ const styles = {
     justifyContent: 'space-around'
   },
   label: {
-    flex: '1 1 33.3%',
+    flex: '1 1 auto',
+    width: '33%',
     textAlign: 'center',
     fontSize: '10px',
     color: '#aaa',
     '&:first-child': {
-      textAlign: 'left'
+      textAlign: 'left',
+      width: '17%',
     },
     '&:last-child': {
-      textAlign: 'right'
+      textAlign: 'right',
+      width: '17%',
     }
   },
   handle: {
@@ -61,13 +64,16 @@ const styles = {
     borderRadius: '4px',
     position: 'absolute',
     top: 0,
-    bottom: 0
+    bottom: 0,
+    pointerEvent: 'none'
   }
 };
 
 class ColRangeChart extends Component {
   constructor(props) {
     super(props);
+
+    this.chartAreaRef = React.createRef();
 
     this.mouseDownHandler = this.mouseDownHandler.bind(this);
     this.mouseUpHandler = this.mouseUpHandler.bind(this);
@@ -81,6 +87,16 @@ class ColRangeChart extends Component {
       start: 0,
       end: props.data.length - 1
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.data !== this.props.data) {
+      this.setState({
+        isMouseDown: false,
+        start: 0,
+        end: this.props.data.length - 1
+      });
+    }
   }
 
   mouseDownHandler(index) {
@@ -111,17 +127,16 @@ class ColRangeChart extends Component {
 
   dragMoveHandler(e) {
     if (this.state.dragStart) {
-      var rect = e.currentTarget.getBoundingClientRect();
+      var rect = this.chartAreaRef.current.getBoundingClientRect();
       var x = e.clientX - rect.left; //x position within the element.
       var y = e.clientY - rect.top;  //y position within the element.
-      console.log('left: ' + (100*x/e.currentTarget.clientWidth));
-      this.state()
+      this.setState({handleLeft: (100*x/rect.width)});
     }
   }
 
   render() {
     const { classes, data } = this.props;
-    if (!data) {
+    if (!data || data.length == 0) {
       return null;
     }
     const max = _.maxBy(data, 'count').count;
@@ -129,7 +144,10 @@ class ColRangeChart extends Component {
     let cols = data.map((x, i) => {
       let colClass = _.inRange(i, this.state.start, this.state.end) || i === this.state.end ? classes.colActive : classes.col;
       if (!this.state.isMouseDown) colClass += ' qtip';
-      if (i === 0) {
+
+      if (data.length === 1) {
+        colClass += ' tip-top';
+      } else if (i === 0) {
         colClass += ' tip-right'
       } else if (i === data.length-1) {
         colClass += ' tip-left';
@@ -137,20 +155,21 @@ class ColRangeChart extends Component {
         colClass += ' tip-top';
       }
       const colStyle = { height: Math.ceil(100 * x.count / max) + '%' };
+      const label = x.start !== x.end ? `${x.start}-${x.end} : ${x.count.toLocaleString()}` : `${x.start} : ${x.count.toLocaleString()}`
       return (
         <li key={x.start} className={classes.colOuter} onMouseDown={() => { this.mouseDownHandler(i) }} onMouseUp={() => { this.mouseUpHandler(i) }} onMouseEnter={() => { this.mouseEnterHandler(i) }}>
-          <span className={colClass} style={colStyle} data-tip={`${x.start}-${x.end} : ${x.count}`}></span>
+          <span className={colClass} style={colStyle} data-tip={label}></span>
         </li>
       );
     });
 
-    let handleLeft = {left: `calc(${100*this.state.start/data.length}% - 4px`};
+    let handleLeft = {left: `calc(${100*(this.state.start)/data.length}% - 4px`};
     let handleRight = {left: `calc(${100*(this.state.end + 1)/data.length}% - 4px`};
 
     const minLabel = _.minBy(data, 'start').start;
     const maxLabel = _.maxBy(data, 'end').end;
     const diff = maxLabel - minLabel;
-    const steps = Math.floor(diff / 4);
+    const steps = Math.floor(diff / 3);
     let labelData = [minLabel, minLabel + steps, minLabel + steps * 2, maxLabel];
     let labels = labelData.map(x => {
       return (
@@ -159,13 +178,13 @@ class ColRangeChart extends Component {
     });
     const element = (
       <div>
-        <div className={classes.colunmWrapper}>
-          <ul className={classes.columns} onMouseMove={this.dragMoveHandler}>
+        <div className={classes.colunmWrapper} ref={this.chartAreaRef}>
+          <ul className={classes.columns}>
             {cols}
           </ul>
-          {
+          {false &&
           <React.Fragment>
-            <div className={classes.handle} style={handleLeft} onMouseDown={this.dragStartHandler}></div>
+            <div className={classes.handle} style={handleLeft}></div>
             <div className={classes.handle} style={handleRight}></div>
           </React.Fragment>
           }

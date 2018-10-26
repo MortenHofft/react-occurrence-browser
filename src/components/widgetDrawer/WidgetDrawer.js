@@ -12,7 +12,7 @@ class WidgetDrawer extends Component {
     let widgets = Object.keys(this.props.appSettings.widgets).map((name) => {
       let w = this.props.appSettings.widgets[name];
       let WidgetComponent = w.component;
-      return <WidgetComponent key={name} filter={this.props.filter} updateFilter={this.props.updateFilter} config={w} />
+      return <WidgetComponent key={name} filter={this.props.filter} updateFilter={this.props.updateFilter} config={w} search={this.props.appSettings.search}/>
     });
     return (
         <div>
@@ -52,7 +52,7 @@ let hocWidget = props => (
     <StateContext.Consumer>
       {({ appSettings }) => {
         return (
-          <WidgetDrawer {...props} appSettings={appSettings} />
+          <WidgetDrawer {...props}  appSettings={appSettings} />
         );
       }}
     </StateContext.Consumer>

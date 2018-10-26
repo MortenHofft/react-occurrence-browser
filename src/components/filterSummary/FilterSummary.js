@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { Component } from 'react';
 import injectSheet from 'react-jss'
 import _ from 'lodash';
 import StateContext from "../../StateContext";
-
+import ModalWidget from "../modal/ModalWidget";
 import Chip from '../chip/Chip'
 
+/*
+Idea. if more than 2 filters of a type, then [dataset:2 selected] and clicking allows you to see/edit them. This is similar to what airBnb does.
+ */
 let styles = {
     chips: {
         display: 'inline',
@@ -29,52 +32,74 @@ function getListItem(DisplayName, param, value, index, cb, negated) {
     )
 }
 
-function FilterSummary(props) {
-    const { classes, appSettings } = props;
-    const filterConfig = appSettings.filters;
-    const style = { margin: '10px 0 -5px 0' };
-    let filterChips = [];
-    let negatedFilterChips = [];
-    let index = 0;
+class FilterSummary extends Component {
+    constructor(props){
+        super(props);
 
-    let must = _.get(props, 'filter.query.must', {});
-    let must_not = _.get(props, 'filter.query.must_not', {});
-
-    let freetext = _.get(props, 'filter.query.freetext', '');
-    if (freetext !== '') {
-        filterChips.push(getListItem(filterConfig[param].displayName, 'freetext', freetext, index++, props.updateFilter, false, classes));
+        this.state = {
+            showModal: false
+        };
     }
-    Object.keys(must).forEach(function (param) {
-        must[param].forEach(function (value) {
-            filterChips.push(getListItem(appSettings.filters[param].displayName, param, value, index++, props.updateFilter, false, classes));
-        });
-    });
 
-    Object.keys(must_not).forEach(function (param) {
-        must_not[param].forEach(function (value) {
-            if (filterConfig[param]) {
-                negatedFilterChips.push(getListItem(appSettings.filters[param].displayName, param, value, index++, props.updateFilter, true, classes));
-            } else {
-                console.error('non configured filter');
-            }
-        });
-    });
+    render() {
+        const { classes, appSettings, updateFilter } = this.props;
+        const filterConfig = appSettings.filters;
+        const style = { margin: '10px 0 -5px 0' };
+        let filterChips = [];
+        let negatedFilterChips = [];
+        let index = 0;
 
-    const element = (
-        <div>
-            {filterChips.length > 0 &&
-                <div style={style}>
-                    <ul className={classes.chips}>
-                        {filterChips}
-                    </ul>
-                    <ul className={classes.chips}>
-                        {negatedFilterChips}
-                    </ul>
-                </div>
+        let must = _.get(this.props, 'filter.query.must', {});
+        let must_not = _.get(this.props, 'filter.query.must_not', {});
+
+        let freetext = _.get(this.props, 'filter.query.freetext', '');
+        if (freetext !== '') {
+            filterChips.push(getListItem(filterConfig[param].displayName, 'freetext', freetext, index++, updateFilter, false, classes));
+        }
+        let that = this;
+        Object.keys(must).forEach(function (param) {
+            let displayName = _.get(appSettings.filters[param], 'displayName', appSettings.displayName(param));//TODO more consistency on how displayname is chosen
+            if (must[param].length === 1) {
+                filterChips.push(getListItem(displayName, param, must[param][0], index++, updateFilter, false, classes));
+            } else if (must[param].length > 1) {
+                filterChips.push(<li key={index++}>
+                    <Chip param={param} value={must[param].length + ' selected'} onClick={() => { that.setState({ showModal: true, modalField: param }) }} />
+                </li>);
             }
-        </div>
-    );
-    return element;
+            // must[param].forEach(function (value) {
+            //     filterChips.push(getListItem(displayName, param, value, index++, props.updateFilter, false, classes));
+            // });
+        });
+
+        Object.keys(must_not).forEach(function (param) {
+            must_not[param].forEach(function (value) {
+                if (filterConfig[param]) {
+                    negatedFilterChips.push(getListItem(appSettings.filters[param].displayName, param, value, index++, updateFilter, true, classes));
+                } else {
+                    console.error('non configured filter');
+                }
+            });
+        });
+
+        const element = (
+            <div>
+                {filterChips.length > 0 &&
+                    <div style={style}>
+                        <ul className={classes.chips}>
+                            {filterChips}
+                        </ul>
+                        <ul className={classes.chips}>
+                            {negatedFilterChips}
+                        </ul>
+                    </div>
+                }
+                {this.state.showModal &&
+                    <ModalWidget onClose={() => {this.setState({showModal: false})}} widgetName={this.state.modalField} />
+                }
+            </div>
+        );
+        return element;
+    }
 }
 
 let HOC = props => (
