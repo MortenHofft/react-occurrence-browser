@@ -34,7 +34,7 @@ export default config => {
         .get(appConfig.endpoints.species + "/" + id)
         .then(result => ({ title: result.data.scientificName }))
     ),
-    BasisOfRecordTitle: fieldFormatter(id => id.toLowerCase().replace("_", " ")),
+    basisOfRecord: fieldFormatter(id => id.toLowerCase().replace("_", " ")),
     year: fieldFormatter(id => {
       if (typeof id === 'object') {
         if (_.isUndefined(id.gte)) {
@@ -64,6 +64,13 @@ export default config => {
       txDescription: 'tx.filters.datasetDescription',
       mapping: 'datasetKey', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
       displayName: displayName.datasetKey
+    },
+    {
+      name: 'basisOfRecord',
+      txName: 'tx.filters.basisOfRecord',
+      txDescription: 'tx.filters.basisOfRecordDescription',
+      mapping: 'basisOfRecord', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
+      displayName: displayName.basisOfRecord
     },
     {
       name: 'Substrate',
@@ -122,6 +129,12 @@ export default config => {
       }
     },
     {
+      name: 'basisOfRecord',
+      query: function (q, filter, limit) {
+        return api_es.suggest(filter, q, 'basisOfRecord', 'basisOfRecord', limit);
+      }
+    },
+    {
       name: 'Substrate',
       query: function (q, filter, limit) {
         return api_es.suggest(filter, q, 'dynamicProperties.Substrate.keyword', 'dynamicProperties.Substrate.keyword', limit);
@@ -162,6 +175,16 @@ export default config => {
       suggest: stdSearch.dataset,
       facets: function (filter, limit) {
         return api_es.facet(filter, 'datasetKey', limit);
+      },
+      component: FacetWidget
+    },
+    {
+      name: 'basisOfRecord',
+      type: 'FACET',//type or better the component itself.
+      filter: stdFilters.basisOfRecord,
+      suggest: stdSearch.basisOfRecord,
+      facets: function (filter, limit) {
+        return api_es.facet(filter, 'basisOfRecord', limit);
       },
       component: FacetWidget
     },
