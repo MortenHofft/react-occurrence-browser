@@ -29,7 +29,7 @@ export default getData =>
     getTitle() {
       let dataResult = getData(this.props.id);
       // if it is a promise, then wait for it to return
-      if (typeof dataResult.then === "function") {
+      if (dataResult && typeof dataResult.then === "function") {
         dataResult.then(
           result => {
             if (this._mounted) {

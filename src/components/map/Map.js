@@ -41,8 +41,8 @@ class Map extends Component {
     this.map = new mapboxgl.Map({
       container: this.myRef.current,
       style: "mapbox://styles/mapbox/light-v9",
-      zoom: 6,
-      center: [11, 56]
+      zoom: 0,
+      center: [0, 0]
     });
     this.map.addControl(new mapboxgl.NavigationControl({showCompass: false}), 'top-left');
     this.map.on("load", this.addLayer);
@@ -74,6 +74,7 @@ class Map extends Component {
     filter = this.props.appSettings.search.build(filter);
     var tileString =
       // "https://esmap.gbif-dev.org//api/tile/{x}/{y}/{z}.mvt?field=coordinate_point&url=" +
+      // "http://localhost:3000/api/tile/significant/{x}/{y}/{z}.mvt?field=coordinate_point&significantField=backbone.speciesKey&url=" +
       "http://localhost:3000/api/tile/point/{x}/{y}/{z}.mvt?field=coordinate_point&url=" +
       encodeURIComponent(`http:${this.props.appSettings.esEndpoint}/_search?`) +
       "&filter=" +
@@ -131,6 +132,22 @@ class Map extends Component {
       },
       "poi-scalerank2"
     );
+
+    // let map = this.map;
+    // this.map.on('click', 'occurrences', function(e) {
+    //   // Change the cursor style as a UI indicator.
+    //   map.getCanvas().style.cursor = 'pointer';
+
+    //   // Populate the popup and set its coordinates
+    //   // based on the feature found.
+    //   console.log(e.features[0].properties.species);
+    //   if (e.features[0].properties.species) {
+    //       new mapboxgl.Popup({closeButton: false})
+    //           .setLngLat(e.lngLat)
+    //           .setHTML(e.features[0].properties.species + <span>tester</span>)
+    //           .addTo(map);
+    //   }
+    // });
   }
 
   render() {

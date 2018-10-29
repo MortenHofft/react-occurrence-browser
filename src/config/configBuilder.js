@@ -29,7 +29,7 @@ export default config => {
         .get(appConfig.endpoints.publisher + "/" + id)
         .then(result => result.data)
     ),
-    SpeciesTitle: fieldFormatter(id =>
+    taxonKey: fieldFormatter(id =>
       axios
         .get(appConfig.endpoints.species + "/" + id)
         .then(result => ({ title: result.data.scientificName }))
@@ -93,6 +93,13 @@ export default config => {
       mapping: 'year',
       displayName: displayName.year,
       type: 'range'
+    },
+    {
+      name: 'taxon',
+      txName: 'tx.filters.taxon',
+      txDescription: 'tx.filters.taxonDescription',
+      mapping: 'backbone.taxonKey',
+      displayName: displayName.taxonKey
     }
   ];
   stdFilters = _.keyBy(stdFilters, 'name');
@@ -123,6 +130,12 @@ export default config => {
       name: 'recordedBy',
       query: function (q, filter, limit) {
         return api_es.suggestCompleter(q, 'recordedBy.suggest', limit);
+      }
+    },
+    {
+      name: 'taxon',
+      query: function (q, filter, limit) {
+        return api_es.suggest(filter, q, 'scientificName', 'taxonKey', limit);
       }
     }
   ];
@@ -175,6 +188,17 @@ export default config => {
         return api_es.facet(filter, 'institutionCode', limit);
       },
       component: FacetWidget
+    },
+    {
+      name: 'taxon',
+      type: 'FACET',//type or better the component itself.
+      filter: stdFilters.taxon,
+      suggest: stdSearch.taxon,
+      facets: function (filter, limit) {
+        return api_es.facet(filter, 'taxonKey', limit);
+      },
+      component: FacetWidget,
+      hideFacetsWhenAll: true
     }
   ];
   stdWidgets = _.keyBy(stdWidgets, 'name');
