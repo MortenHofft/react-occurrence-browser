@@ -80,5 +80,14 @@ describe('StateHelper updateFilter', () => {
     };
     expect(stateHelper.getUpdatedFilter(initialFilter, options)).toEqual(expectedResult);
   });
+
+  it('can handle keys with dots in them', () => {
+    const initialFilter = {};
+    const options = {key: 'dynamicProperties.weightInGrams', value: '5.2', action: 'ADD'};
+    const expectedResult = {
+      must: {'dynamicProperties.weightInGrams': ['5.2']}
+    };
+    expect(stateHelper.getUpdatedFilter(initialFilter, options)).toEqual(expectedResult);
+  });
   
 });

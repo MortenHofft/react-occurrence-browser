@@ -9,14 +9,15 @@ let styles = {
     fontWeight: 'bold',
     '&>*': {
       display: 'inline-block',
-      background: '#ddd',
-      padding: '3px 5px',
+      background: '#fff',
+      padding: '6px 12px',
+      border: '1px solid #eee',
       borderRadius: '0 3px 3px 0',
       '&:first-child': {
-        border: '1px solid #bbb',
-        borderWidth: '0 1px 0 0',
+        border: '1px solid #eee',
+        borderRightWidth: 0,
         borderRadius: '3px 0 0 3px',
-        color: '#6f6f6f'
+        fontWeight: 'normal',
       }
     }
   },

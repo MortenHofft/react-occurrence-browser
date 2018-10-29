@@ -8,6 +8,14 @@ import Chip from '../chip/Chip'
 /*
 Idea. if more than 2 filters of a type, then [dataset:2 selected] and clicking allows you to see/edit them. This is similar to what airBnb does.
  */
+const chip = {
+    display: 'inline-block',
+    fontSize: 12,
+    background: '#fff',
+    padding: '6px 12px',
+    border: '1px solid #eee',
+    borderRadius: 3,
+};
 let styles = {
     chips: {
         display: 'inline',
@@ -21,13 +29,23 @@ let styles = {
             display: 'inline-block',
             float: 'left'
         }
+    },
+    chip: chip,
+    chipActive: {
+        ...chip,
+        background: 'deepskyblue',
+        color: '#fff',
+        fontWeight: 'bold'
     }
 };
 
-function getListItem(DisplayName, param, value, index, cb, negated) {
+function getListItem(classes, DisplayName, param, value, index, cb, negated) {
     return (
         <li key={index}>
-            <Chip param={param} value={<DisplayName id={value} negated={negated} />} onClick={() => cb({ key: param, value: value, action: 'REMOVE', isNegated: negated })} />
+            {/* <Chip param={param} value={<DisplayName id={value} negated={negated} />} onClick={() => cb({ key: param, value: value, action: 'REMOVE', isNegated: negated })} /> */}
+            <span className={classes.chipActive} onClick={() => cb({ key: param, value: value, action: 'REMOVE', isNegated: negated })}>
+                <DisplayName id={value} negated={negated} />
+            </span>
         </li>
     )
 }
@@ -54,16 +72,19 @@ class FilterSummary extends Component {
 
         let freetext = _.get(this.props, 'filter.query.freetext', '');
         if (freetext !== '') {
-            filterChips.push(getListItem(filterConfig[param].displayName, 'freetext', freetext, index++, updateFilter, false, classes));
+            filterChips.push(getListItem(classes, filterConfig[param].displayName, 'freetext', freetext, index++, updateFilter, false, classes));
         }
         let that = this;
         Object.keys(must).forEach(function (param) {
             let displayName = _.get(appSettings.filters[param], 'displayName', appSettings.displayName(param));//TODO more consistency on how displayname is chosen
             if (must[param].length === 1) {
-                filterChips.push(getListItem(displayName, param, must[param][0], index++, updateFilter, false, classes));
+                filterChips.push(getListItem(classes, displayName, param, must[param][0], index++, updateFilter, false, classes));
             } else if (must[param].length > 1) {
                 filterChips.push(<li key={index++}>
-                    <Chip param={param} value={must[param].length + ' selected'} onClick={() => { that.setState({ showModal: true, modalField: param }) }} />
+                    {/* <Chip param={param} value={must[param].length + ' selected'} onClick={() => { that.setState({ showModal: true, modalField: param }) }} /> */}
+                    <span className={classes.chipActive} onClick={() => { that.setState({ showModal: true, modalField: param }) }} >
+                        {must[param].length + ' ' + param + 's'}
+                    </span>
                 </li>);
             }
             // must[param].forEach(function (value) {
@@ -74,7 +95,7 @@ class FilterSummary extends Component {
         Object.keys(must_not).forEach(function (param) {
             must_not[param].forEach(function (value) {
                 if (filterConfig[param]) {
-                    negatedFilterChips.push(getListItem(appSettings.filters[param].displayName, param, value, index++, updateFilter, true, classes));
+                    negatedFilterChips.push(getListItem(classes, appSettings.filters[param].displayName, param, value, index++, updateFilter, true, classes));
                 } else {
                     console.error('non configured filter');
                 }

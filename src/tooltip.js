@@ -3,13 +3,16 @@ export default {
     //display: 'inline-block',
     //position: 'relative',
     cursor: 'pointer',
-    color: '#3bb4e5',
-    boxSizing: 'border-box',
-    fontStyle: 'normal',
+    // color: '#3bb4e5',
+    // boxSizing: 'border-box',
+    // fontStyle: 'normal',
     transition: 'all .25s ease-in-out'
   },
+  '& .qtipRelative': {
+    position: 'relative'
+  },
   '& .qtip:hover': {
-    color: '#069',
+    // color: '#069',
   },
   '& .qtip:before': {
     content: 'attr(data-tip)',

@@ -6,9 +6,9 @@ import WidgetHeader from "./WidgetHeader";
 import LoadBar from "./LoadBar";
 import ColChart from "../dumbChart/ColChart";
 
- const keyField = 'year';//sampleSizeValue
-//const keyField = 'month';
-// const keyField = 'dynamicProperties.sampleSizeValue.keyword';
+const keyField = 'year';//sampleSizeValue
+// const keyField = 'month';
+// const keyField = 'dynamicProperties.weightInGrams';
 
 const styles = {
   inputArea: {
@@ -63,8 +63,8 @@ class EventDateWidget extends Component {
 
     
     this.state = {
-      start: _.get(props.filter, `query.must.${keyField}[0].gte`, ''),
-      end: _.get(props.filter, `query.must.${keyField}[0].lte`, ''),
+      start: _.get(props.filter, `query.must["${keyField}"][0].gte`, ''),
+      end: _.get(props.filter, `query.must["${keyField}"][0].lt`, ''),
       isRange: true
     };
   }
@@ -86,8 +86,13 @@ class EventDateWidget extends Component {
 
   updateCounts() {
     this.props.search.histogramBuckets(this.props.filter.query, keyField, 10, 1).then(result => {
-      result.buckets = result.buckets.map(x => ({count: x.doc_count, start: x.key, end: x.key + result.interval-1}));
+      result.buckets = result.buckets.map(x => ({count: x.doc_count, start: x.key, end: x.key + result.interval}));
       this.setState({histogram: result});
+      // this.setState({histogram: {buckets:[
+      //   {count: 10, start: 0.1, end: 0.2},
+      //   {count: 20, start: 0.2, end: 0.3},
+      //   {count: 5, start: 0.3, end: 0.4}
+      // ]}});
     });
   }
 
@@ -122,13 +127,13 @@ class EventDateWidget extends Component {
     if (!this.state.isRange) {
       end = start;
     }
-    this.props.updateFilter({action: 'UPDATE', key: keyField, value: {gte: start, lte: end}});
+    this.props.updateFilter({action: 'UPDATE', key: keyField, value: {gte: start, lt: end}});
   }
 
   render() {
     const { classes } = this.props;
     const options = <li onClick={() => {this.setState({isRange: !this.state.isRange})}}>Toggle range</li>
-    const isFiltered = _.has(this.props.filter, `query.must.${keyField}[0].gte`);
+    const isFiltered = _.has(this.props.filter, `query.must["${keyField}"][0].gte`);
     return (
       <WidgetContainer>
         {this.state.loading && <LoadBar />}

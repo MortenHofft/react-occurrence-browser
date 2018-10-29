@@ -1,3 +1,5 @@
+import tooltipStyle from './tooltip'
+
 export default {
   occurrenceSearch: {
     position: 'relative',
@@ -31,6 +33,7 @@ export default {
     },
     display: 'flex',
     flexDirection: 'column',
+    ...tooltipStyle
   },
   searchBar: {
     border: '1px solid #ddd',

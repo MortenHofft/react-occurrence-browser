@@ -24,7 +24,7 @@ function getUpdatedFilter(immutableFilter, options) {
     const type = isNegated ? 'must_not' : 'must'
     const valueArray = asArray(value);
 
-    let paramValues = asArray(_.get(filter, `${type}[${key}]`, []));
+    let paramValues = asArray(_.get(filter, `${type}["${key}"]`, []));
     if (action === 'CLEAR') {
         paramValues = '';
     } else if (action === 'ADD') {
@@ -37,7 +37,7 @@ function getUpdatedFilter(immutableFilter, options) {
         paramValues = valueArray;
     }
 
-    _.set(filter, `${type}.${key}`, paramValues);
+    _.set(filter, `${type}["${key}"]`, paramValues);
     if (!paramValues || _.isEmpty(paramValues)) {
         delete filter[type][key];
     }

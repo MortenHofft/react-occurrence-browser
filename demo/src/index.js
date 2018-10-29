@@ -58,13 +58,13 @@ let widgets = {
 class Demo extends Component {
   constructor(props) {
     super(props);
-    // this.state = {endpoint: '//localhost:9200/fungi'};
-    this.state = {endpoint: '//es1.gbif-dev.org/some_fungi'};
+    this.state = {endpoint: '//localhost:9200/fungi'};
+    // this.state = {endpoint: '//es1.gbif-dev.org/some_fungi'};
   }
 
   render() {
     return <div>
-      <div style={{lineHeight:'20px', padding:'20px', background:'deepskyblue', color: 'white'}}>react-occurrence-browser Demo</div>
+      {/* <div style={{lineHeight:'20px', padding:'20px', background:'deepskyblue', color: 'white'}}>react-occurrence-browser Demo</div> */}
       <div style={style}>
         <OccurrenceBrowser endpoint={this.state.endpoint} config={{mapStateToUrl: true, fieldConfig: fieldConfig, widgets: widgets}}/>
       </div>

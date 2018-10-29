@@ -38,13 +38,13 @@ export default config => {
     year: fieldFormatter(id => {
       if (typeof id === 'object') {
         if (_.isUndefined(id.gte)) {
-          return `before ${id.lte}`;  
-        } else if(_.isUndefined(id.lte)) {
+          return `before ${id.lt}`;  
+        } else if(_.isUndefined(id.lt)) {
           return `after ${id.gte}`;  
-        } else if(id.gte === id.lte) {
+        } else if(id.gte === id.lt) {
           return id.gte;
         }
-        return `${id.gte}-${id.lte}`;
+        return <span data-tip={`from (incl) - to (excl)`} className="qtipRelative qtip tip-right">{id.gte} - {id.lt}</span>
       }
       return id;
     })
@@ -70,6 +70,13 @@ export default config => {
       txName: 'tx.filters.Substrate',
       txDescription: 'tx.filters.Substrate',
       mapping: 'dynamicProperties.Substrate.keyword', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
+      displayName: displayName.Identity
+    },
+    {
+      name: 'WeightInGrams',
+      txName: 'tx.filters.WeightInGrams',
+      txDescription: 'tx.filters.WeightInGrams',
+      mapping: 'dynamicProperties.WeightInGrams', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
       displayName: displayName.Identity
     },
     {

@@ -119,7 +119,7 @@ function EsRequest(esEndpoint, filters) {
   }
 
   let decimalRanges = [];
-  [1, 10, 100, 1000, 10000, 10000, 100000].forEach(x => {
+  [.00001, .0001, .001, .01, .1, 1, 10, 100, 1000, 10000, 10000, 100000, 1000000, 10000000].forEach(x => {
     decimalRanges = decimalRanges.concat([1000/x, 500/x, 250/x])
   });
   _.remove(decimalRanges, x => (x === 2.5));
@@ -131,7 +131,6 @@ function EsRequest(esEndpoint, filters) {
     let interval = (statResults.max - statResults.min)/buckets;
     interval = _.find(decimalRanges, x => (x <= interval));
     interval = Math.max(minIntervalSize, interval);
-
     return histogram(appQuery, keyField, interval).then(buckets => {return {buckets: buckets, interval: interval, count: statResults.count }});
   }
 

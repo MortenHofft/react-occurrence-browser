@@ -105,7 +105,9 @@ class OccurrenceSearch extends Component {
   }
 
   updateFilter(options) {
+    console.log(options);
     const query = stateHelper.getUpdatedFilter(this.state.filter.query, options);
+    console.log(query);
     if (this.props.config.mapStateToUrl) {
       if (stateHelper.isEmptyQuery(query)) {
         history.push(window.location.pathname);
