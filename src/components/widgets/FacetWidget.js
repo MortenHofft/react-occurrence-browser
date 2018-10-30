@@ -74,8 +74,9 @@ class FacetOptions extends Component {
     this.getSearchResults = this.getSearchResults.bind(this);
     this.getItems = this.getItems.bind(this);
 
-    //this.getItemsFromResults = this.getItemsFromResults.bind(this);
-    let fieldFilter = _.get(this.props.filter, `query.must.${this.props.config.filter.name}`, []);
+    this.filterConfig = this.props.appSettings.filters[this.props.filterID];
+
+    let fieldFilter = _.get(this.props.filter, `query.must.${this.props.filterID}`, []);
 
     this.state = {
       hasSelectionChanged: false,
@@ -105,7 +106,7 @@ class FacetOptions extends Component {
       this.cancelPromises();
       let fieldFilter = _.get(
         this.props.filter,
-        `query.must.${this.props.config.filter.name}`,
+        `query.must.${this.props.filterID}`,
         []
       );
       this.setState({ value: '', isDirty: false, hasSelectionChanged: false, selected: fieldFilter, newSelected: fieldFilter }, this.getFilterFacets);
@@ -129,13 +130,14 @@ class FacetOptions extends Component {
     let limit = this.state.selected.length || this.state.limit;
 
     // should facets be shown when nothing is selected?
-    if (this.props.config.hideFacetsWhenAll && this.state.selected.length === 0) {
+    if (this.props.hideFacetsWhenAll && this.state.selected.length === 0) {
       this.setState({ filteredItems: [], total: 0 });
       return;
     }
 
-    let DisplayFormater = this.props.config.filter.displayName;
-    let facetPromise = this.props.config.facets(this.props.filter.query, limit);
+    // let DisplayFormater = this.props.appSettings.displayName(this.props.filterID).component;
+    let DisplayFormater = this.filterConfig.displayName;
+    let facetPromise = this.props.appSettings.search.facet(this.props.filter.query, this.filterConfig.mapping, limit);
     this.facetPromise = facetPromise;
     facetPromise.then(
       result => {
@@ -175,11 +177,11 @@ class FacetOptions extends Component {
 
   getSearchResults() {
     this.setState({ showSearchResults: true });
-    let DisplayFormater = this.props.config.filter.displayName;
+    let DisplayFormater = this.filterConfig.displayName;;
     //remove filter for this field (to give results other than the already selected) aka multiselect
     let filter = _.clone(this.props.filter.query);
-    _.unset(filter, `must.${this.props.config.filter.name}`);
-    let searchPromise = this.props.config.suggest.query(this.state.value, this.props.filter.query, this.state.limit);
+    _.unset(filter, `must.${this.props.filterID}`);
+    let searchPromise = this.props.appSettings.suggest[this.props.suggestID].query(this.state.value, this.props.filter.query, this.state.limit);
     this.searchPromise = searchPromise;
     searchPromise.then(
       result => {
@@ -235,7 +237,7 @@ class FacetOptions extends Component {
 
   apply() {
     this.props.updateFilter({
-      key: this.props.config.filter.name,
+      key: this.props.filterID,
       action: 'UPDATE',
       value: this.state.newSelected
     })
@@ -243,7 +245,7 @@ class FacetOptions extends Component {
 
   selectAll() {
     this.props.updateFilter({
-      key: this.props.config.filter.name,
+      key: this.props.filterID,
       action: 'CLEAR'
     })
   }
@@ -303,13 +305,13 @@ class FacetOptions extends Component {
     const items = isDirty
       ? this.state.items || []
       : this.state.filteredItems || [];
-    const showNoResults = !this.props.config.hideFacetsWhenAll || (this.state.filteredItems && this.state.filteredItems.length > 0);
+    const showNoResults = !this.props.hideFacetsWhenAll || (this.state.filteredItems && this.state.filteredItems.length > 0);
 
     return (
       <WidgetContainer>
         {this.state.loading && <LoadBar />}
         <div className="filter__content">
-          <WidgetHeader>{this.props.config.filter.name}</WidgetHeader>
+          <WidgetHeader>{this.props.config.title}</WidgetHeader>
           <div>
             <div className={classes.search}>
               <input

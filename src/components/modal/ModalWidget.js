@@ -60,7 +60,7 @@ class ModalWidget extends Component {
           this.handleHide(api.updateFilter);
         }}
       >
-        <WidgetComponent filter={this.state.modalFilter} updateFilter={this.updateModalFilter} config={appSettings.widgets[this.props.widgetName]} />
+        <WidgetComponent filter={this.state.modalFilter} updateFilter={this.updateModalFilter} config={appSettings.widgets[this.props.widgetName]} appSettings={appSettings}/>
       </ModalBlocker>
     );
   }

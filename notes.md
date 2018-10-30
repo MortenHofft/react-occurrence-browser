@@ -32,3 +32,8 @@ Intersting read on grids: https://www.r-bloggers.com/session-1-gridding-data-for
 high res land polygons http://openstreetmapdata.com/data/land-polygons
 natrual earth data: https://www.naturalearthdata.com/downloads/110m-physical-vectors/
 equal area pixels that keep ratio somewhat https://healpix.sourceforge.io/index.php
+
+
+-----
+
+the summary chips opens a widget to control the filter. there should be a way to get a widget from a filter name. currently it only works if they happen to share name,

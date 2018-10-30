@@ -1,108 +1,19 @@
-import ApiEs from './api_es';
-import _ from 'lodash';
-import {FacetWidget, EventDateWidget} from '../components/widgets';
-import displayNames from './displayNames';
-import filterConfig from './filterConfig';
-import searchConfig from './searchConfig';
+import ApiEs from "./api_es";
+import _ from "lodash";
+import displayNames from "./displayNames";
+import filterConfig from "./filterConfig";
+import searchConfig from "./searchConfig";
+import widgetConfig from "./widgetConfig";
 
 export default config => {
-  let appConfig = {};
-
-  appConfig.endpoints = {
-    dataset: "//api.gbif.org/v1/dataset",
-    publisher: "//api.gbif.org/v1/dataset",
-    species: "//api.gbif.org/v1/species"
-  };
-
-  appConfig.fieldMapping = {
-    substrate: 'dynamicProperties.Substrate.keyword',
-    taxonKey: 'backbone.taxonKey',
-    dataset: 'datasetKey',
-    Substrate: 'dynamicProperties.Substrate.keyword'
-  };
-
   const filters = filterConfig(config.customFilters);
   const api_es = new ApiEs(config.occurrenceEndpoint, filters);
   const searchOptions = searchConfig(api_es, config.customSearch);
-
-  let stdWidgets = [
-    {
-      name: 'eventDate',
-      type: 'FACET',//type or better the component itself.
-      filter: filters.eventDate,
-      component: EventDateWidget
-    },
-    {
-      name: 'dataset',
-      type: 'FACET',//type or better the component itself.
-      filter: filters.dataset,
-      suggest: searchOptions.dataset,
-      facets: function (filter, limit) {
-        return api_es.facet(filter, 'datasetKey', limit);
-      },
-      component: FacetWidget
-    },
-    {
-      name: 'basisOfRecord',
-      type: 'FACET',//type or better the component itself.
-      filter: filters.basisOfRecord,
-      suggest: searchOptions.basisOfRecord,
-      facets: function (filter, limit) {
-        return api_es.facet(filter, 'basisOfRecord', limit);
-      },
-      component: FacetWidget
-    },
-    {
-      name: 'recordedBy',
-      type: 'FACET',//type or better the component itself.
-      filter: filters.recordedBy,
-      suggest: searchOptions.recordedBy,
-      facets: function (filter, limit) {
-        return api_es.facet(filter, 'recordedBy', limit);
-      },
-      component: FacetWidget,
-      hideFacetsWhenAll: true
-    },
-    {
-      name: 'Substrate',
-      type: 'FACET',//type or better the component itself.
-      filter: filters.Substrate,
-      suggest: searchOptions.Substrate,
-      facets: function (filter, limit) {
-        return api_es.facet(filter, 'dynamicProperties.Substrate.keyword', limit);
-      },
-      component: FacetWidget
-    },
-    {
-      name: 'institutionCode',
-      type: 'FACET',//type or better the component itself.
-      filter: filters.institutionCode,
-      suggest: searchOptions.institutionCode,
-      facets: function (filter, limit) {
-        return api_es.facet(filter, 'institutionCode', limit);
-      },
-      component: FacetWidget
-    },
-    {
-      name: 'taxon',
-      type: 'FACET',//type or better the component itself.
-      filter: filters.taxon,
-      suggest: searchOptions.taxon,
-      facets: function (filter, limit) {
-        return api_es.facet(filter, 'taxonKey', limit);
-      },
-      component: FacetWidget,
-      hideFacetsWhenAll: true
-    }
-  ];
-  stdWidgets = _.keyBy(stdWidgets, 'name');
-  stdWidgets = _.merge({}, stdWidgets);
-
-  let widgets = stdWidgets;//and add custom widgets and filter out stdwidgets not selected in user config.
+  const widgets = widgetConfig(config.customWidgets);
 
   return {
-    config: appConfig,
     displayName: displayNames,
+    suggest: searchOptions,
     esEndpoint: config.occurrenceEndpoint,
     widgets: widgets,
     filters: filters,
@@ -110,16 +21,7 @@ export default config => {
   };
 };
 
-
-
-
-
-
-
-
-
-
-  /*
+/*
   Filters
   Summaries
     organismCount
@@ -155,11 +57,7 @@ export default config => {
         https://medium.com/@pimterry/building-a-server-rendered-map-component-part-2-using-client-side-libraries-6f1bb751f31c
   */
 
-
-
-
-
-  /*
+/*
   
   what is the relation between filters and widgets. there could be multiple ways to set a filter. such as one widget and 2 filters.
   there should always be at least one widget for a filter.
