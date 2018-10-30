@@ -103,7 +103,7 @@ export default config => {
   return {
     config: appConfig,
     displayName: displayNames,
-    esEndpoint: config.esEndpoint,
+    esEndpoint: config.occurrenceEndpoint,
     widgets: widgets,
     filters: filters,
     search: api_es
