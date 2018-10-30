@@ -1,10 +1,9 @@
-import axios from "axios";
-import React from "react";
-import fieldFormatter from "../components/fieldFormatter";
-import EsRequest from '../esRequest';
 import ApiEs from './api_es';
 import _ from 'lodash';
 import {FacetWidget, EventDateWidget} from '../components/widgets';
+import displayNames from './displayNames';
+import filterConfig from './filterConfig';
+import searchConfig from './searchConfig';
 
 export default config => {
   let appConfig = {};
@@ -15,41 +14,6 @@ export default config => {
     species: "//api.gbif.org/v1/species"
   };
 
-  let displayName = {
-    Identity: (props) => {
-      return <span>{typeof props.id !== 'object' ? props.id : JSON.stringify(props.id) }</span>;
-    },
-    datasetKey: fieldFormatter(id =>
-      axios
-        .get(appConfig.endpoints.dataset + "/" + id)
-        .then(result => result.data)
-    ),
-    publisherKey: fieldFormatter(id =>
-      axios
-        .get(appConfig.endpoints.publisher + "/" + id)
-        .then(result => result.data)
-    ),
-    taxonKey: fieldFormatter(id =>
-      axios
-        .get(appConfig.endpoints.species + "/" + id)
-        .then(result => ({ title: result.data.scientificName }))
-    ),
-    basisOfRecord: fieldFormatter(id => id.toLowerCase().replace("_", " ")),
-    year: fieldFormatter(id => {
-      if (typeof id === 'object') {
-        if (_.isUndefined(id.gte)) {
-          return `before ${id.lt}`;  
-        } else if(_.isUndefined(id.lt)) {
-          return `after ${id.gte}`;  
-        } else if(id.gte === id.lt) {
-          return id.gte;
-        }
-        return <span data-tip={`from (incl) - to (excl)`} className="qtipRelative qtip tip-right">{id.gte} - {id.lt}</span>
-      }
-      return id;
-    })
-  };
-
   appConfig.fieldMapping = {
     substrate: 'dynamicProperties.Substrate.keyword',
     taxonKey: 'backbone.taxonKey',
@@ -57,122 +21,22 @@ export default config => {
     Substrate: 'dynamicProperties.Substrate.keyword'
   };
 
-  let stdFilters = [
-    {
-      name: 'dataset',
-      txName: 'tx.filters.dataset',
-      txDescription: 'tx.filters.datasetDescription',
-      mapping: 'datasetKey', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
-      displayName: displayName.datasetKey
-    },
-    {
-      name: 'basisOfRecord',
-      txName: 'tx.filters.basisOfRecord',
-      txDescription: 'tx.filters.basisOfRecordDescription',
-      mapping: 'basisOfRecord', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
-      displayName: displayName.basisOfRecord
-    },
-    {
-      name: 'Substrate',
-      txName: 'tx.filters.Substrate',
-      txDescription: 'tx.filters.Substrate',
-      mapping: 'dynamicProperties.Substrate.keyword', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
-      displayName: displayName.Identity
-    },
-    {
-      name: 'WeightInGrams',
-      txName: 'tx.filters.WeightInGrams',
-      txDescription: 'tx.filters.WeightInGrams',
-      mapping: 'dynamicProperties.WeightInGrams', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
-      displayName: displayName.Identity
-    },
-    {
-      name: 'institutionCode',
-      txName: 'tx.filters.institutionCode',
-      txDescription: 'tx.filters.institutionCodeDescription',
-      mapping: 'institutionCode', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
-      displayName: displayName.Identity
-    },
-    {
-      name: 'recordedBy',
-      txName: 'tx.filters.recordedBy',
-      txDescription: 'tx.filters.recordedByDescription',
-      mapping: 'recordedBy', //string or optional function mapping to a query obj to include in must array. location and date fx, might map in a more complex manner.
-      displayName: displayName.Identity
-    },
-    {
-      name: 'year',
-      txName: 'tx.filters.year',
-      txDescription: 'tx.filters.yearDescription',
-      mapping: 'year',
-      displayName: displayName.year,
-      type: 'range'
-    },
-    {
-      name: 'taxon',
-      txName: 'tx.filters.taxon',
-      txDescription: 'tx.filters.taxonDescription',
-      mapping: 'backbone.taxonKey',
-      displayName: displayName.taxonKey
-    }
-  ];
-  stdFilters = _.keyBy(stdFilters, 'name');
-
-  const esRequest = new EsRequest(config.esEndpoint, appConfig.fieldMapping);
-  const api_es = new ApiEs(config.esEndpoint, stdFilters);
-
-  let stdSearch = [
-    {
-      name: 'dataset',
-      query: function (q, filter, limit) {
-        return api_es.suggest(filter, q, 'datasetTitle', 'datasetKey', limit);
-      }
-    },
-    {
-      name: 'basisOfRecord',
-      query: function (q, filter, limit) {
-        return api_es.suggest(filter, q, 'basisOfRecord', 'basisOfRecord', limit);
-      }
-    },
-    {
-      name: 'Substrate',
-      query: function (q, filter, limit) {
-        return api_es.suggest(filter, q, 'dynamicProperties.Substrate.keyword', 'dynamicProperties.Substrate.keyword', limit);
-      }
-    },
-    {
-      name: 'institutionCode',
-      query: function (q, filter, limit) {
-        return api_es.suggest(filter, q, 'institutionCode', 'institutionCode', limit);
-      }
-    },
-    {
-      name: 'recordedBy',
-      query: function (q, filter, limit) {
-        return api_es.suggestCompleter(q, 'recordedBy.suggest', limit);
-      }
-    },
-    {
-      name: 'taxon',
-      query: function (q, filter, limit) {
-        return api_es.suggest(filter, q, 'scientificName', 'taxonKey', limit);
-      }
-    }
-  ];
-  stdSearch = _.keyBy(stdSearch, 'name');
+  const filters = filterConfig(config.customFilters);
+  const api_es = new ApiEs(config.occurrenceEndpoint, filters);
+  const searchOptions = searchConfig(api_es, config.customSearch);
 
   let stdWidgets = [
     {
       name: 'eventDate',
       type: 'FACET',//type or better the component itself.
-      filter: stdFilters.eventDate,
+      filter: filters.eventDate,
       component: EventDateWidget
     },
     {
       name: 'dataset',
       type: 'FACET',//type or better the component itself.
-      filter: stdFilters.dataset,
-      suggest: stdSearch.dataset,
+      filter: filters.dataset,
+      suggest: searchOptions.dataset,
       facets: function (filter, limit) {
         return api_es.facet(filter, 'datasetKey', limit);
       },
@@ -181,8 +45,8 @@ export default config => {
     {
       name: 'basisOfRecord',
       type: 'FACET',//type or better the component itself.
-      filter: stdFilters.basisOfRecord,
-      suggest: stdSearch.basisOfRecord,
+      filter: filters.basisOfRecord,
+      suggest: searchOptions.basisOfRecord,
       facets: function (filter, limit) {
         return api_es.facet(filter, 'basisOfRecord', limit);
       },
@@ -191,8 +55,8 @@ export default config => {
     {
       name: 'recordedBy',
       type: 'FACET',//type or better the component itself.
-      filter: stdFilters.recordedBy,
-      suggest: stdSearch.recordedBy,
+      filter: filters.recordedBy,
+      suggest: searchOptions.recordedBy,
       facets: function (filter, limit) {
         return api_es.facet(filter, 'recordedBy', limit);
       },
@@ -202,8 +66,8 @@ export default config => {
     {
       name: 'Substrate',
       type: 'FACET',//type or better the component itself.
-      filter: stdFilters.Substrate,
-      suggest: stdSearch.Substrate,
+      filter: filters.Substrate,
+      suggest: searchOptions.Substrate,
       facets: function (filter, limit) {
         return api_es.facet(filter, 'dynamicProperties.Substrate.keyword', limit);
       },
@@ -212,8 +76,8 @@ export default config => {
     {
       name: 'institutionCode',
       type: 'FACET',//type or better the component itself.
-      filter: stdFilters.institutionCode,
-      suggest: stdSearch.institutionCode,
+      filter: filters.institutionCode,
+      suggest: searchOptions.institutionCode,
       facets: function (filter, limit) {
         return api_es.facet(filter, 'institutionCode', limit);
       },
@@ -222,8 +86,8 @@ export default config => {
     {
       name: 'taxon',
       type: 'FACET',//type or better the component itself.
-      filter: stdFilters.taxon,
-      suggest: stdSearch.taxon,
+      filter: filters.taxon,
+      suggest: searchOptions.taxon,
       facets: function (filter, limit) {
         return api_es.facet(filter, 'taxonKey', limit);
       },
@@ -232,27 +96,16 @@ export default config => {
     }
   ];
   stdWidgets = _.keyBy(stdWidgets, 'name');
-  stdWidgets = _.merge({}, stdWidgets, config.widgets);
+  stdWidgets = _.merge({}, stdWidgets);
 
   let widgets = stdWidgets;//and add custom widgets and filter out stdwidgets not selected in user config.
 
-
-
-  function Identity(props) {
-    return <span>{props.id}</span>;
-  }
-
-  function getDisplayName(field) {
-    return displayName[field] ? displayName[field] : displayName.Identity;
-  }
-
   return {
     config: appConfig,
-    displayName: getDisplayName,
+    displayName: displayNames,
     esEndpoint: config.esEndpoint,
-    esRequest: esRequest,
     widgets: widgets,
-    filters: stdFilters,
+    filters: filters,
     search: api_es
   };
 };

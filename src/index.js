@@ -31,7 +31,7 @@ class OccurrenceSearch extends Component {
     this.setOpenMenu = this.setOpenMenu.bind(this);
     this.toggleWidgets = this.toggleWidgets.bind(this);
 
-    let appSettings = configBuilder({widgets: this.props.config.widgets, esEndpoint: this.props.endpoint});
+    let appSettings = configBuilder(this.props.config);
     
     let query = {must: {}, must_not: {}};
     
@@ -144,9 +144,9 @@ class OccurrenceSearch extends Component {
             omniSearch={<OmniSearch filter={this.state.filter} updateFilter={this.state.api.updateFilter} />}
             filterSummary={<FilterSummary displayName={this.state.appSettings.displayName} filter={this.state.filter} updateFilter={this.state.api.updateFilter} />}
             widgetDrawer={<WidgetDrawer displayName={this.state.appSettings.displayName} filter={this.state.filter} updateFilter={this.state.api.updateFilter} />}
-            table={<Table filter={this.state.filter} endpoint={this.props.endpoint} config={this.props.config} displayName={this.state.appSettings.displayName} />}
-            map={<Map filter={this.state.filter} endpoint={this.props.endpoint} config={this.props.config} displayName={this.state.appSettings.displayName} />}
-            gallery={<Gallery filter={this.state.filter} endpoint={this.props.endpoint} config={this.props.config} displayName={this.state.appSettings.displayName} />}
+            table={<Table filter={this.state.filter} config={this.props.config} displayName={this.state.appSettings.displayName} />}
+            map={<Map filter={this.state.filter} />}
+            gallery={<Gallery filter={this.state.filter} />}
             viewSelector={<ViewSelector active={this.state.activeView} updateView={this.updateView}/>}
           />
         </div>

@@ -44,7 +44,7 @@ export default getData =>
         );
       } else {
         // the function simply returned a value.
-        this.setState({ title: dataResult });
+        this.setState({ title: dataResult.title });
       }
     } 
 
@@ -54,9 +54,9 @@ export default getData =>
       ) : (
         this.state.title
       );
-      const style = typeof title !== 'undeined'
+      const style = typeof title !== 'undefined'
         ? {}
-        : {display:'inline-block', width: '100px', height: '12px', background: '#f5f5f5'};
-      return <span style={style}>{title} </span>;
+        : {display:'inline-block', width: '100px', background: 'rgba(0,0,0,.1)'};
+      return <span style={style}>{title}&nbsp;</span>;
     }
   };

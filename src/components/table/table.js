@@ -7,7 +7,13 @@ import StateContext from "../../StateContext";
 import ModalWidget from "../modal/ModalWidget";
 
 const styles = {
-  occurrenceTable: tableStyle
+  occurrenceTable: tableStyle,
+  icon: {
+    fontSize: 14,
+    color: '#aaa',
+    marginLeft: 5,
+    cursor: 'pointer'
+  }
 };
 
 class Table extends Component {
@@ -60,7 +66,7 @@ class Table extends Component {
     );
   }
 
-  getHeaders() {
+  getHeaders(classes) {
     let handleShow = this.handleShow;
     let setState = () => this.setState({ stickyCol: !this.state.stickyCol });
     let icon = this.state.stickyCol ? "lock" : "lock_open";
@@ -69,7 +75,7 @@ class Table extends Component {
       let name = field.filter || field.name;
       let filterButton = field.filterWidget ? (
         <i
-          className="material-icons u-secondaryTextColor u-small"
+          className={classes.icon + " material-icons u-secondaryTextColor u-small"}
           onClick={() => handleShow(name)}
         >
           filter_list
@@ -78,7 +84,7 @@ class Table extends Component {
       let stickyButton =
         index === 0 ? (
           <i
-            className="material-icons u-secondaryTextColor u-small"
+            className={classes.icon + " material-icons u-secondaryTextColor u-small"}
             onClick={setState}
           >
             {icon}
@@ -108,7 +114,7 @@ class Table extends Component {
           </td>
         );
       }
-      let DisplayName = props.displayName(field.name);
+      let DisplayName = props.displayName(field.name).component;
       return (
         <td key={field.name}>
           <span>
@@ -136,7 +142,7 @@ class Table extends Component {
     const tbody = this.state.occurrences.map(function(e, i) {
       return <tr key={i}>{getRow(e)}</tr>;
     });
-    let headers = this.getHeaders();
+    let headers = this.getHeaders(this.props.classes);
 
     let scrolled = this.state.scrolled ? "scrolled" : "";
     let stickyCol = this.state.stickyCol ? "stickyCol" : "";

@@ -75,6 +75,7 @@ class FilterSummary extends Component {
             filterChips.push(getListItem(classes, filterConfig[param].displayName, 'freetext', freetext, index++, updateFilter, false, classes));
         }
         let that = this;
+
         Object.keys(must).forEach(function (param) {
             let displayName = _.get(appSettings.filters[param], 'displayName', appSettings.displayName(param));//TODO more consistency on how displayname is chosen
             if (must[param].length === 1) {
