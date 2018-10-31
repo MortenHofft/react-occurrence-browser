@@ -13,8 +13,6 @@ const style = {
 class Demo extends Component {
   constructor(props) {
     super(props);
-    // this.state = {endpoint: '//localhost:9200/fungi'};
-    this.state = {endpoint: '//es1.gbif-dev.org/some_fungi'};
   }
 
   render() {

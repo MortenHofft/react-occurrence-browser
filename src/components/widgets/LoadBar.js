@@ -1,22 +1,42 @@
 import React from 'react';
 import injectSheet from 'react-jss';
 
+const loader = {
+  height: 1,
+  width: '100%',
+  position: 'relative',
+  overflow: 'hidden',
+};
+const loadbarBefore = {
+  display: 'block',
+  position: 'absolute',
+  content: '""',
+  left: -200,
+  width: 200,
+  height: 1,
+  backgroundColor: '#2980b9',
+  animation: 'loading 1.5s linear infinite'
+}
+
 const styles = {
   loader: {
-    height: 1,
-    width: '100%',
-    position: 'relative',
-    overflow: 'hidden',
+    ...loader,
     '&:before': {
-      display: 'block',
-      position: 'absolute',
-      content: '""',
-      left: -200,
-      width: 200,
-      height: 1,
-      backgroundColor: '#2980b9',
-      animation: 'loading 1.5s linear infinite'
+      ...loadbarBefore
     }
+  },
+  loaderError: {
+    ...loader,
+    '&:before': {
+      ...loadbarBefore,
+      backgroundColor: 'tomato',
+      left: 0,
+      animation: 'none',
+      width: '100%'
+    }
+  },
+  loaderInactive: {
+    ...loader
   },
   '@keyframes loading': {
     from: {
@@ -42,8 +62,10 @@ const styles = {
 };
 
 function LoadBar(props) {
-  return(
-    <div className={props.classes.loader}></div>
+  const {classes} = props;
+  const loaderClass = props.error ? classes.loaderError : classes.loader;
+  return (
+    <div className={props.active ? loaderClass : classes.loaderInactive}></div>
   );
 }
 

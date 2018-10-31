@@ -139,6 +139,7 @@ class FacetOptions extends Component {
     let DisplayFormater = this.filterConfig.displayName;
     let facetPromise = this.props.appSettings.search.facet(this.props.filter.query, this.filterConfig.mapping, limit);
     this.facetPromise = facetPromise;
+    this.setState({loadingFacets: true});
     facetPromise.then(
       result => {
         if (this._mounted) {
@@ -159,7 +160,7 @@ class FacetOptions extends Component {
             }
           }
           let items = this.getItems(results, this.state.selected);
-          let newState = { filteredItems: items, total: result.count }
+          let newState = { filteredItems: items, total: result.count, loadingFacets: false }
           if (!this.state.isDirty) {
             newState.items = _.cloneDeep(items);
           }
@@ -169,7 +170,7 @@ class FacetOptions extends Component {
       error => {
         console.error(error);
         if (this._mounted) {
-          this.setState({ error: true });
+          this.setState({ error: true, loadingFacets: false });
         }
       }
     );
@@ -183,6 +184,7 @@ class FacetOptions extends Component {
     _.unset(filter, `must.${this.props.filterID}`);
     let searchPromise = this.props.appSettings.suggest[this.props.suggestID].query(this.state.value, this.props.filter.query, this.state.limit);
     this.searchPromise = searchPromise;
+    this.setState({loadingSuggestions: true});
     searchPromise.then(
       result => {
         if (this._mounted) {
@@ -192,13 +194,13 @@ class FacetOptions extends Component {
             id: e.value
           }));
           let items = this.getItems(results, this.state.newSelected);
-          this.setState({ items: items, searchTotal: result.count, isDirty: true });
+          this.setState({ items: items, searchTotal: result.count, isDirty: true, loadingSuggestions: false });
         }
       },
       error => {
         console.error(error);
         if (this._mounted) {
-          this.setState({ error: true });
+          this.setState({ error: true, loadingSuggestions: false });
         }
       }
     );
@@ -230,6 +232,7 @@ class FacetOptions extends Component {
       isDirty: false,
       hasSelectionChanged: false,
       newSelected: this.state.selected,
+      items: _.cloneDeep(this.state.filteredItems),
       value: '',
       highlightIndex: undefined
     });
@@ -276,7 +279,7 @@ class FacetOptions extends Component {
   }
 
   handleSelectChange(item) {
-    let newSelected
+    let newSelected;
 
     //if a selected item is clicked then remove it from selection
     if (item.selected) {
@@ -287,7 +290,7 @@ class FacetOptions extends Component {
     }
     //update which items are selected
     const items = this.updateSelection(this.state.items, newSelected);
-    this.updateSelection(this.state.items, newSelected);
+    // this.updateSelection(this.state.items, newSelected);
     const hasSelectionChanged = !_.isEqual(this.state.selected.sort(), newSelected.sort());
     this.setState({
       items: items,
@@ -309,9 +312,9 @@ class FacetOptions extends Component {
 
     return (
       <WidgetContainer>
-        {this.state.loading && <LoadBar />}
+        <LoadBar active={this.state.loadingFacets || this.state.loadingSuggestions || this.state.error} error={this.state.error} />
         <div className="filter__content">
-          <WidgetHeader>{this.props.config.title}</WidgetHeader>
+          <WidgetHeader>{this.props.title}</WidgetHeader>
           <div>
             <div className={classes.search}>
               <input
@@ -326,7 +329,7 @@ class FacetOptions extends Component {
 
             <div className={classes.filterInfo}>
               {this.state.newSelected.length > 0 && <span>{this.state.newSelected.length} selected</span>}
-              {this.state.newSelected.length === 0 && <span>All selected</span>}
+              {this.state.newSelected.length === 0 && !this.props.hideFacetsWhenAll && <span>All selected</span>}
               {!hasSelectionChanged && this.state.selected.length > 0 && <span className={classes.filterAction} onClick={this.selectAll} role="button">Select all</span>}
             </div>
             <FacetList
@@ -349,8 +352,8 @@ class FacetOptions extends Component {
               {hasSelectionChanged && <a className={classes.filterAction} onClick={this.apply} role="button">Apply</a>}
             </div>}
             {/* <pre style={{ fontSize: '10px' }}>
-          {JSON.stringify(this.state, null, 2)}
-        </pre> */}
+              {JSON.stringify(this.state, null, 2)}
+          </pre> */}
           </div>
         </div>
       </WidgetContainer>
@@ -359,3 +362,19 @@ class FacetOptions extends Component {
 }
 
 export default injectSheet(styles)(FacetOptions);
+
+/**
+ * er blevet uoverskuelig stor.
+ * split ud i dele.
+ * 
+ * onFilterUpdate: refresh state?
+ * 
+ * data handler component? fetches data
+ * <presentational original selected options>
+ * originalSelected, newSelected, items (selectedBool)
+ * widget
+ *  header
+ *  searchbar
+ *    changes dirty, triggers search, updates items
+ *  items ()
+ */

@@ -8,7 +8,7 @@ export default {
     title: "Dataset",
     description: "tx.path.description",
     component: props => (
-      <FacetWidget {...props} filterID="dataset" suggestID="dataset" />
+      <FacetWidget {...props} filterID="dataset" suggestID="dataset" title="Dataset" description="What dataset should the occurrences come from"/>
     )
   },
   recordedBy: {
@@ -22,6 +22,7 @@ export default {
         filterID="recordedBy"
         hideFacetsWhenAll={true}
         suggestID="recordedBy"
+        title="Recorded by" description="what is the name of the person who made the observation"
       />
     )
   },
@@ -31,7 +32,7 @@ export default {
     title: "Substrate",
     description: "tx.path.description",
     component: props => (
-      <FacetWidget {...props} filterID="Substrate" suggestID="Substrate" />
+      <FacetWidget {...props} filterID="Substrate" suggestID="Substrate" title="Substrate" description="What should the organism grow on" />
     )
   }
 };

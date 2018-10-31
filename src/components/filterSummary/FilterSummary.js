@@ -15,10 +15,12 @@ const chip = {
     padding: '6px 12px',
     border: '1px solid #eee',
     borderRadius: 3,
+    transition: 'background 200ms ease',
 };
 let styles = {
     chips: {
         display: 'inline',
+        cursor: 'pointer',
         margin: '0',
         padding: '0',
         content: '""',
@@ -35,7 +37,19 @@ let styles = {
         ...chip,
         background: 'deepskyblue',
         color: '#fff',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        '&:hover': {
+            background: '#03aae2'
+        }
+    },
+    chipClear: {
+        ...chip,
+        background: 'none',
+        color: 'deepskyblue',
+        borderColor: 'deepskyblue',
+        '&:hover': {
+          background: '#00c5ff1a'
+        }
     }
 };
 
@@ -92,6 +106,13 @@ class FilterSummary extends Component {
             //     filterChips.push(getListItem(displayName, param, value, index++, props.updateFilter, false, classes));
             // });
         });
+        if (Object.keys(must).length > 0) {
+            filterChips.push(<li key='_clear'>
+                <span className={classes.chipClear} onClick={() => {this.props.api.setQuery()}}>
+                    Clear filters
+                </span>
+            </li>);
+        }
 
         Object.keys(must_not).forEach(function (param) {
             must_not[param].forEach(function (value) {
