@@ -44,7 +44,7 @@ export default getData =>
         );
       } else {
         // the function simply returned a value.
-        this.setState({ title: dataResult.title });
+        this.setState({ title: typeof dataResult.title === 'undefined' ? '' : dataResult.title });
       }
     } 
 

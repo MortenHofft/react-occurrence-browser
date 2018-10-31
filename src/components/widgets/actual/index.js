@@ -1,10 +1,20 @@
 import React from "react";
 import FacetWidget from "../FacetWidget";
+import EnumFilter from "../enumFilter/EnumFilter";
 
 export default {
+  basisOfRecord: {
+    name: "basisOfRecord",
+    type: "FILTER",
+    title: "Basis of record",
+    description: "tx.path.description",
+    component: props => (
+      <EnumFilter {...props} filterID="basisOfRecord" suggestID="basisOfRecord" title="Basis of record" description="what is the evidence for the occurrence"/>
+    )
+  },
   dataset: {
     name: "dataset",
-    type: "FILTER", //type or better the component itself.
+    type: "FILTER",
     title: "Dataset",
     description: "tx.path.description",
     component: props => (
