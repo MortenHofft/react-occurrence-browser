@@ -58,20 +58,21 @@ function EsRequest(esEndpoint, filters) {
     body.from = from;
 
     return axios.post(esEndpoint + '/_search', body, {
-      headers: {
-        'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
-      }
+      // headers: {
+      //   'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
+      // }
     });
   }
 
   function count(appQuery) {
     let body = build(appQuery);
-
+    
     return axios.post(esEndpoint + '/_count', body, {
       headers: {
-        'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
+        'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.orgXXX') ? 'text/plain;charset=UTF-8' : 'application/json'//undefined
       }
-    }).then(response => { return response.data.count });
+    })
+    .then(response => { return response.data.count });
   }
 
   function facet(appQuery, keyField, size) {
@@ -82,9 +83,9 @@ function EsRequest(esEndpoint, filters) {
     body.from = 0;
 
     return axios.post(esEndpoint + '/_search', body, {
-      headers: {
-        'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
-      }
+      // headers: {
+      //   'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
+      // }
     }).then(response => (formatCountResults(response.data, keyField)));
   }
 
@@ -97,9 +98,9 @@ function EsRequest(esEndpoint, filters) {
     body.from = 0;
 
     return axios.post(esEndpoint + '/_search', body, {
-      headers: {
-        'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
-      }
+      // headers: {
+      //   'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
+      // }
     }).then(response => (response.data.aggregations.stats));
   }
 
@@ -112,9 +113,9 @@ function EsRequest(esEndpoint, filters) {
     body.from = 0;
 
     return axios.post(esEndpoint + '/_search', body, {
-      headers: {
-        'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
-      }
+      // headers: {
+      //   'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
+      // }
     }).then(response => (response.data.aggregations.histogram.buckets));
   }
 
@@ -148,9 +149,9 @@ function EsRequest(esEndpoint, filters) {
     body.from = 0;
 
     return axios.post(esEndpoint + '/_search', body, {
-      headers: {
-        'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
-      }
+      // headers: {
+      //   'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
+      // }
     }).then(response => (formatCountResults(response.data, keyField)));
   }
 
@@ -172,9 +173,9 @@ function EsRequest(esEndpoint, filters) {
     };
 
     return axios.post(esEndpoint + '/_search', body, {
-      headers: {
-        'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
-      }
+      // headers: {
+      //   'Content-Type': esEndpoint.startsWith('//es1.gbif-dev.org') ? 'text/plain;charset=UTF-8' : undefined
+      // }
     }).then(response => {
       return {
         results: response.data.suggest.fieldSuggest[0].options.map((s) => ({value: s.text}))

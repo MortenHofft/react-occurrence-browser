@@ -3,6 +3,7 @@ import {render} from 'react-dom'
 import _ from 'lodash';
 import config from './config_simple';
 
+import axios from 'axios';
 import OccurrenceBrowser from '../../src'
 
 const style = {
@@ -13,6 +14,13 @@ const style = {
 class Demo extends Component {
   constructor(props) {
     super(props);
+
+    // let testUrl = 'https://api.gbif.org/v1/dataset/24baf0da-60a9-4a13-99d7-a8c860c3cb30';
+    // testUrl = 'http://es1.gbif-dev.org/some_fungi/_search';
+    // return axios.post(testUrl, {}).then(x => {
+    //   console.log(x.data)
+    // }).catch(err => {console.log(err)});
+
   }
 
   render() {

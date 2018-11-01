@@ -193,4 +193,74 @@ export default injectSheet(styles)(EnumFilter);
  *  searchbar
  *    changes dirty, triggers search, updates items
  *  items ()
+ * 
+ * 
+ * 
+ * get facet counts
+ * get selected
+ * get enums
+ * 
+ * component to handle displaying and changing the list.
+ *      
+ * 
+ * handle filter updates.
+ * 
+ */
+
+
+
+
+
+
+
+
+ /*
+
+ <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script
+  <title>JS Bin</title>
+</head>
+<body>
+  <pre id="test">
+    Hej
+  </pre>
+  <script>
+    var url = 'https://es1.gbif-dev.org/some_fungi/_search';
+    axios.get(url).then(function(response) {
+      document.getElementById('test').innerHTML = JSON.stringify(response.data, null, 2);
+    }).catch(function(err){
+      document.getElementById('test').innerHTML = err;
+    });
+  </script>
+</body>
+</html>
+
+
+
+postData('https://es1.gbif-dev.org/some_fungi/_search', {})
+  .then(data => console.log(JSON.stringify(data))) // JSON-string from `response.json()` call
+  .catch(error => console.error(error));
+
+function postData(url = ``, data = {}) {
+  // Default options are marked with *
+    return fetch(url, {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, *same-origin, omit
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            // "Content-Type": "application/x-www-form-urlencoded",
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+        body: JSON.stringify(data), // body data type must match "Content-Type" header
+    })
+    .then(response => response.json()); // parses response to JSON
+}
+
  */
