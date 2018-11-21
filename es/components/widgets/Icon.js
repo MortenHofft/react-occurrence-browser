@@ -8,7 +8,7 @@ var styles = {
 };
 
 function Icon(props) {
-  var style = { width: props.size || '20px', height: props.size || '20px' };
+  var style = { width: props.width || props.size || '20px', height: props.height || props.size || '20px' };
   var svg = React.createElement(
     'span',
     null,

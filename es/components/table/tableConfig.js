@@ -19,27 +19,6 @@ export default {
     name: 'year',
     width: 100
   }, {
-    name: 'kingdom',
-    width: 100
-  }, {
-    name: 'phylum',
-    width: 100
-  }, {
-    name: 'class',
-    width: 100
-  }, {
-    name: 'order',
-    width: 100
-  }, {
-    name: 'family',
-    width: 100
-  }, {
-    name: 'genus',
-    width: 100
-  }, {
-    name: 'species',
-    width: 100
-  }, {
     name: 'gbifID',
     width: 100
   }]

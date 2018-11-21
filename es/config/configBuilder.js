@@ -1,44 +1,27 @@
-import axios from "axios";
-import React from "react";
-import fieldFormatter from "./components/fieldFormatter";
-import EsRequest from './esRequest';
+import ApiEs from "./api_es";
+import _ from "lodash";
+import displayNames from "./displayNames";
+import filterConfig from "./filterConfig";
+import searchConfig from "./searchConfig";
+import widgetConfig from "./widgetConfig";
 
 export default (function (config) {
-  var appConfig = {};
+  var filters = filterConfig(config.customFilters);
+  var api_es = new ApiEs(config.occurrenceEndpoint, filters);
+  var searchOptions = searchConfig(api_es, config.customSearch);
+  var widgets = widgetConfig(config.customWidgets);
 
-  appConfig.endpoints = {
-    dataset: "//api.gbif.org/v1/dataset",
-    publisher: "//api.gbif.org/v1/dataset",
-    species: "//api.gbif.org/v1/species"
+  return {
+    displayName: displayNames,
+    suggest: searchOptions,
+    esEndpoint: config.occurrenceEndpoint,
+    widgets: widgets,
+    filters: filters,
+    search: api_es
   };
+});
 
-  appConfig.fieldFormatter = {
-    DatasetTitle: fieldFormatter(function (id) {
-      return axios.get(appConfig.endpoints.dataset + "/" + id).then(function (result) {
-        return result.data;
-      });
-    }),
-    PublisherTitle: fieldFormatter(function (id) {
-      return axios.get(appConfig.endpoints.publisher + "/" + id).then(function (result) {
-        return result.data;
-      });
-    }),
-    SpeciesTitle: fieldFormatter(function (id) {
-      return axios.get(appConfig.endpoints.species + "/" + id).then(function (result) {
-        return { title: result.data.scientificName };
-      });
-    }),
-    BasisOfRecordTitle: fieldFormatter(function (id) {
-      return id.toLowerCase().replace("_", " ");
-    })
-  };
-
-  appConfig.fieldMapping = {
-    substrate: 'dynamicProperties.Substrate.keyword',
-    taxonKey: 'backbone.taxonKey'
-  };
-
-  /*
+/*
   Filters
   Summaries
     organismCount
@@ -46,7 +29,8 @@ export default (function (config) {
     elevation
     weight?
   Metrics? (which might or might not be interactive)
-   filters
+
+  filters
     facets
     year range selctor?
     date range selector https://reactdatepicker.com or perhaps newer http://projects.wojtekmaj.pl/react-date-picker/
@@ -73,14 +57,48 @@ export default (function (config) {
         https://medium.com/@pimterry/building-a-server-rendered-map-component-part-2-using-client-side-libraries-6f1bb751f31c
   */
 
-  /*
+/*
+  
+  what is the relation between filters and widgets. there could be multiple ways to set a filter. such as one widget and 2 filters.
+  there should always be at least one widget for a filter.
+   
+  so what defines a filter then. 
+  the things that it takes to do the query for consumers (table, maps, gallery etc) and to show the summary chips.
+  * a must[name] and a value(string/obj) it can take. 
+  * a serializer to construct the es filter. a filter could in theory relate to multiple fields. Perhaps I should define a filter as at least defaulting to a single field operation.
+    * say start date & end date. or substrate being an implcit fungi filter as well. User selects a day. translates to start end of day.
+  * displayname for filter name (translation) and for filter values
+  * description (translation)
+  
+  widget then supplements with (in case of single field facet)
+  * suggest/search
+  * esField (somewhat related to the serializer)
+  * 
+   
+  dates: 
+  reading about it it seems that filtering per month, requires month have its own field. similar for year.
+  date histograms require date field NOT date_range. sorting don't work on date_range.
+  so probably use: date_range, start/mid/end, month. year. local time of day (not available now)
+        use date_range for range queries by intervals (incl year). Or make year an array.
+        use month (start) for q by month. or make month an array.
+        use start for sorting.
+  This is influenced a lot by performance and usability. best perhaps to try. and secondly consider it isolated to the serializer.
+  and just use it as e.g. a year filter. that is then mapped to whatever field and query appropriate.
+  
+  One widget could control more than one filter (say year and month and perhaps event date).
+   
+  table:
+  sort on date, 
+  
   diplayName
   esField
   translationPath for the filter
   ? serializer/deserializer (e.g. date intervals)
   suggest/search
-   a query builder, that can point to either es or apiv1
-   filterWidget facet
+  
+  a query builder, that can point to either es or apiv1
+  
+  filterWidget facet
   Does
     show breakdown of a specific field. one field only.
     optional allows you to search it.
@@ -109,51 +127,12 @@ export default (function (config) {
     Option to toggle (hide all but title and a count).
     Option to show all selected (and not just top n)
     Option to remove widget
-      This works for fields that are one value.
+  
+  
+    This works for fields that are one value.
     
     How to handle multivalue fields? Custom filter perhaps?
       Problem: asking for top n(=selected) facets won't always return data about all the selected 
       (as unselected could be in result set and have more counts)
       Ignore the unusual behavior of issues for now. Possibly a custom solution for that or all array fields.
   */
-
-  var filters = {
-    dataset: {
-      name: 'dataset',
-      translationPath: 'tx.dataset',
-      field: 'datasetKey'
-    }
-  };
-
-  function Identity(props) {
-    return React.createElement(
-      "span",
-      null,
-      props.id
-    );
-  }
-
-  function displayName(field) {
-    switch (field) {
-      case "datasetKey":
-        return appConfig.fieldFormatter.DatasetTitle;
-      case "taxonKey":
-        return appConfig.fieldFormatter.SpeciesTitle;
-      case "publishingOrg":
-        return appConfig.fieldFormatter.PublisherTitle;
-      case "basisOfRecord":
-        return appConfig.fieldFormatter.BasisOfRecordTitle;
-      default:
-        return Identity;
-    }
-  }
-
-  var esRequest = new EsRequest(config.esEndpoint, appConfig);
-
-  return {
-    config: appConfig,
-    displayName: displayName,
-    esEndpoint: config.esEndpoint,
-    esRequest: esRequest
-  };
-});

@@ -1,5 +1,9 @@
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+import tooltipStyle from './tooltip';
+
 export default {
-  occurrenceSearch: {
+  occurrenceSearch: _extends({
     position: 'relative',
     background: '#f2f6f9',
     height: '100%',
@@ -8,6 +12,7 @@ export default {
     boxSizing: 'border-box',
     fontSmoothing: 'antialiased',
     fontFamily: 'Open sans, BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif',
+    //fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif',
     overflow: 'hidden',
     '& ::-webkit-scrollbar': {
       width: 6,
@@ -23,11 +28,14 @@ export default {
       boxSizing: 'border-box'
     },
     '& [role="button"]': {
-      cursor: 'pointer'
+      cursor: 'pointer',
+      '&:focus': {
+        outline: 'tomato'
+      }
     },
     display: 'flex',
     flexDirection: 'column'
-  },
+  }, tooltipStyle),
   searchBar: {
     border: '1px solid #ddd',
     position: 'relative',

@@ -64,7 +64,7 @@ var Gallery = function (_Component) {
     var filter = _.merge({}, this.props.filter.query, {
       must: { media_type: ["StillImage"] }
     });
-    this.props.appSettings.esRequest.getData(filter, 50, 0).then(function (response) {
+    this.props.appSettings.search.query(filter, 50, 0).then(function (response) {
       var result = response.data;
       var occurrences = _.map(result.hits.hits, "_source");
       _this2.setState({ occurrences: occurrences, count: result.hits.total });

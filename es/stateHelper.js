@@ -28,7 +28,7 @@ function getUpdatedFilter(immutableFilter, options) {
     var type = isNegated ? 'must_not' : 'must';
     var valueArray = asArray(value);
 
-    var paramValues = asArray(_.get(filter, type + '[' + key + ']', []));
+    var paramValues = asArray(_.get(filter, type + '["' + key + '"]', []));
     if (action === 'CLEAR') {
         paramValues = '';
     } else if (action === 'ADD') {
@@ -41,7 +41,7 @@ function getUpdatedFilter(immutableFilter, options) {
         paramValues = valueArray;
     }
 
-    _.set(filter, type + '.' + key, paramValues);
+    _.set(filter, type + '["' + key + '"]', paramValues);
     if (!paramValues || _.isEmpty(paramValues)) {
         delete filter[type][key];
     }

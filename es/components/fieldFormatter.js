@@ -43,7 +43,7 @@ export default (function (getData) {
 
       var dataResult = getData(this.props.id);
       // if it is a promise, then wait for it to return
-      if (typeof dataResult.then === "function") {
+      if (dataResult && typeof dataResult.then === "function") {
         dataResult.then(function (result) {
           if (_this2._mounted) {
             _this2.setState({ title: result.title });
@@ -55,7 +55,7 @@ export default (function (getData) {
         });
       } else {
         // the function simply returned a value.
-        this.setState({ title: dataResult });
+        this.setState({ title: typeof dataResult.title === 'undefined' ? '' : dataResult.title });
       }
     };
 
@@ -65,12 +65,12 @@ export default (function (getData) {
         { className: "discreet" },
         "unknown"
       ) : this.state.title;
-      var style = title ? {} : { display: 'inline-block', width: '100px', height: '12px', background: '#f5f5f5' };
+      var style = typeof title !== 'undefined' ? {} : { display: 'inline-block', width: '100px', background: 'rgba(0,0,0,.1)' };
       return React.createElement(
         "span",
         { style: style },
         title,
-        " "
+        "\xA0"
       );
     };
 

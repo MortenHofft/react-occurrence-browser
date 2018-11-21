@@ -3,6 +3,7 @@ export default {
     border: '1px solid #ddd',
     position: 'relative',
     zIndex: '50',
+    borderRadius: '3px',
     '& input': {
       display: 'block',
       width: '100%',

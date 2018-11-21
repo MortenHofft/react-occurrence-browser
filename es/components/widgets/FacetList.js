@@ -12,8 +12,17 @@ import FacetItem from './FacetItem';
 var styles = {
   list: {
     padding: 0,
-    margin: '6px 24px',
+    margin: '6px 0',
     listStyle: 'none'
+  },
+  li: {
+    padding: '0 24px 0 22px',
+    borderLeft: '2px solid transparent'
+  },
+  liActive: {
+    padding: '0 24px 0 22px',
+    borderLeft: '2px solid deepskyblue',
+    background: '#fbfbfb'
   },
   filterInfo: {
     margin: '0px 24px',
@@ -44,8 +53,8 @@ var FacetList = function (_Component) {
     var _this = _possibleConstructorReturn(this, _Component.call(this, props));
 
     _this.state = {
-      defaultCap: 5,
-      collapsed: true
+      // defaultCap: 5,
+      // collapsed: true
     };
     return _this;
   }
@@ -55,9 +64,9 @@ var FacetList = function (_Component) {
   FacetList.prototype.componentWillUnmount = function componentWillUnmount() {};
 
   FacetList.prototype.componentDidUpdate = function componentDidUpdate(prevProps) {
-    if (prevProps.items !== this.props.items) {
-      this.setState({ collapsed: true });
-    }
+    // if (prevProps.items !== this.props.items) {
+    //   this.setState({collapsed: true});
+    // }
   };
 
   FacetList.prototype.render = function render() {
@@ -68,38 +77,23 @@ var FacetList = function (_Component) {
         totalCount = _props.totalCount,
         items = _props.items,
         showCheckbox = _props.showCheckbox,
-        showAllAsSelected = _props.showAllAsSelected;
+        showAllAsSelected = _props.showAllAsSelected,
+        highlightIndex = _props.highlightIndex;
 
     var visibleItems = this.state.collapsed ? items.slice(0, this.state.defaultCap) : items;
     var listItems = visibleItems.map(function (x, index) {
       return React.createElement(
         'li',
-        { key: x.id },
+        { key: x.id, className: highlightIndex === index ? classes.liActive : classes.li },
         React.createElement(FacetItem, { value: x.value, count: x.count, total: totalCount, active: x.selected || showAllAsSelected, showCheckbox: showCheckbox, onChange: function onChange() {
-            return _this2.props.onChange(index, x);
+            return _this2.props.onChange(x, index);
           } })
       );
     });
     return React.createElement(
-      'div',
-      null,
-      React.createElement(
-        'ul',
-        { className: classes.list },
-        listItems
-      ),
-      this.state.defaultCap < items.length && React.createElement(
-        'div',
-        { className: classes.filterInfo },
-        React.createElement('span', null),
-        React.createElement(
-          'span',
-          { className: classes.filterAction, onClick: function onClick() {
-              return _this2.setState({ collapsed: false });
-            }, role: 'button' },
-          'More'
-        )
-      )
+      'ul',
+      { className: classes.list },
+      listItems
     );
   };
 

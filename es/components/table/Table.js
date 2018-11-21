@@ -6,15 +6,22 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-import React, { Component } from 'react';
-import _ from 'lodash';
-import injectSheet from 'react-jss';
-import tableStyle from './tableStyle';
-import defaultFieldConfig from './tableConfig';
-import StateContext from '../../StateContext';
+import React, { Component } from "react";
+import _ from "lodash";
+import injectSheet from "react-jss";
+import tableStyle from "./tableStyle";
+import defaultFieldConfig from "./tableConfig";
+import StateContext from "../../StateContext";
+import ModalWidget from "../modal/ModalWidget";
 
 var styles = {
-  occurrenceTable: tableStyle
+  occurrenceTable: tableStyle,
+  icon: {
+    fontSize: 14,
+    color: '#aaa',
+    marginLeft: 5,
+    cursor: 'pointer'
+  }
 };
 
 var Table = function (_Component) {
@@ -32,7 +39,7 @@ var Table = function (_Component) {
     _this.handleShow = _this.handleShow.bind(_this);
     _this.handleHide = _this.handleHide.bind(_this);
 
-    _this.fieldConfig = _.get(props, 'config.fieldConfig', defaultFieldConfig);
+    _this.fieldConfig = _.get(props, "config.fieldConfig", defaultFieldConfig);
     _this.myRef = React.createRef();
 
     _this.state = {
@@ -60,40 +67,54 @@ var Table = function (_Component) {
   Table.prototype.updateResults = function updateResults() {
     var _this2 = this;
 
-    var q = this.props.query || '';
-    q = q === '' ? '*' : q;
-    this.props.appSettings.esRequest.getData(this.props.filter.query, 20, 0).then(function (response) {
+    var q = this.props.query || "";
+    q = q === "" ? "*" : q;
+    this.props.appSettings.search.query(this.props.filter.query, 20, 0).then(function (response) {
       var result = response.data;
-      var occurrences = _.map(result.hits.hits, '_source');
+      var occurrences = _.map(result.hits.hits, "_source");
       _this2.setState({ occurrences: occurrences, count: result.hits.total });
     }, function (error) {
       _this2.setState({ error: true });
     });
   };
 
-  Table.prototype.getHeaders = function getHeaders() {
+  Table.prototype.getHeaders = function getHeaders(classes) {
     var _this3 = this;
 
     var handleShow = this.handleShow;
     var setState = function setState() {
       return _this3.setState({ stickyCol: !_this3.state.stickyCol });
     };
-    var icon = this.state.stickyCol ? 'lock' : 'lock_open';
+    var icon = this.state.stickyCol ? "lock" : "lock_open";
 
     return this.fieldConfig.fields.map(function (field, index) {
       var name = field.filter || field.name;
+      var filterButton = field.filterWidget ? React.createElement(
+        "i",
+        {
+          className: classes.icon + " material-icons u-secondaryTextColor u-small",
+          onClick: function onClick() {
+            return handleShow(name);
+          }
+        },
+        "filter_list"
+      ) : null;
       var stickyButton = index === 0 ? React.createElement(
-        'i',
-        { className: 'material-icons u-secondaryTextColor u-small', onClick: setState },
+        "i",
+        {
+          className: classes.icon + " material-icons u-secondaryTextColor u-small",
+          onClick: setState
+        },
         icon
       ) : null;
       return React.createElement(
-        'th',
+        "th",
         { key: field.name },
         React.createElement(
-          'span',
+          "span",
           null,
           field.name,
+          filterButton,
           stickyButton
         )
       );
@@ -103,27 +124,27 @@ var Table = function (_Component) {
   Table.prototype.getRow = function getRow(item) {
     var props = this.props;
     return this.fieldConfig.fields.map(function (field) {
-      if (field.name === 'gbifID') {
+      if (field.name === "gbifID") {
         return React.createElement(
-          'td',
+          "td",
           { key: field.name },
           React.createElement(
-            'a',
-            { href: '//gbif.org/occurrence/' + item.gbifID },
+            "a",
+            { href: "//gbif.org/occurrence/" + item.gbifID },
             React.createElement(
-              'span',
+              "span",
               null,
               item[field.name]
             )
           )
         );
       }
-      var DisplayName = props.displayName(field.name);
+      var DisplayName = props.displayName(field.name).component;
       return React.createElement(
-        'td',
+        "td",
         { key: field.name },
         React.createElement(
-          'span',
+          "span",
           null,
           React.createElement(DisplayName, { id: item[field.name] })
         )
@@ -144,54 +165,57 @@ var Table = function (_Component) {
   };
 
   Table.prototype.render = function render() {
-    var _this4 = this;
-
     var getRow = this.getRow;
     var tbody = this.state.occurrences.map(function (e, i) {
       return React.createElement(
-        'tr',
+        "tr",
         { key: i },
         getRow(e)
       );
     });
-    var headers = this.getHeaders();
+    var headers = this.getHeaders(this.props.classes);
 
-    var scrolled = this.state.scrolled ? 'scrolled' : '';
-    var stickyCol = this.state.stickyCol ? 'stickyCol' : '';
+    var scrolled = this.state.scrolled ? "scrolled" : "";
+    var stickyCol = this.state.stickyCol ? "stickyCol" : "";
 
     return React.createElement(
-      StateContext.Consumer,
+      React.Fragment,
       null,
-      function (_ref) {
-        var filter = _ref.filter,
-            api = _ref.api;
-        return React.createElement(
-          'section',
-          { className: _this4.props.classes.occurrenceTable },
+      React.createElement(
+        "section",
+        { className: this.props.classes.occurrenceTable },
+        React.createElement(
+          "div",
+          { className: "tableArea" },
           React.createElement(
-            'div',
-            { className: 'tableArea' },
+            "table",
+            {
+              className: scrolled + " " + stickyCol,
+              onScroll: this.bodyScroll,
+              ref: this.myRef
+            },
             React.createElement(
-              'table',
-              { className: scrolled + ' ' + stickyCol, onScroll: _this4.bodyScroll, ref: _this4.myRef },
+              "thead",
+              null,
               React.createElement(
-                'thead',
+                "tr",
                 null,
-                React.createElement(
-                  'tr',
-                  null,
-                  headers
-                )
-              ),
-              React.createElement(
-                'tbody',
-                null,
-                tbody
+                headers
               )
+            ),
+            React.createElement(
+              "tbody",
+              null,
+              tbody
             )
           )
-        );
-      }
+        )
+      ),
+      this.state.showModalFilter && React.createElement(
+        ModalWidget,
+        { onClose: this.handleHide, widgetName: 'dataset' },
+        "TESTER"
+      )
     );
   };
 
@@ -202,10 +226,12 @@ var hocWidget = function hocWidget(props) {
   return React.createElement(
     StateContext.Consumer,
     null,
-    function (_ref2) {
-      var appSettings = _ref2.appSettings;
+    function (_ref) {
+      var appSettings = _ref.appSettings,
+          filter = _ref.filter,
+          api = _ref.api;
 
-      return React.createElement(Table, _extends({}, props, { appSettings: appSettings }));
+      return React.createElement(Table, _extends({}, props, { filter: filter, api: api, appSettings: appSettings }));
     }
   );
 };

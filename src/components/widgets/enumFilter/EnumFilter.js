@@ -167,9 +167,9 @@ class EnumFilter extends Component {
               onChange={this.handleSelectChange}
             />
 
-            <pre style={{ fontSize: "10px" }}>
+            {/* <pre style={{ fontSize: "10px" }}>
               {JSON.stringify(this.state, null, 2)}
-            </pre>
+            </pre> */}
           </div>
         </div>
       </WidgetContainer>

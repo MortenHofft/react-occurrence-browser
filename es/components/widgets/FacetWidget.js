@@ -1,5 +1,3 @@
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -8,373 +6,414 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 import React, { Component } from "react";
 import _ from "lodash";
-import axios from "axios";
-import injectSheet from "react-jss";
-
-import Suggest from "../Suggest";
 import StateContext from "../../StateContext";
+import injectSheet from "react-jss";
+import FacetList from "./FacetList";
 import WidgetContainer from "./WidgetContainer";
 import WidgetHeader from "./WidgetHeader";
 import LoadBar from "./LoadBar";
-import FacetItem from "./FacetItem";
-import FacetList from "./FacetList";
-import FacetSelector from "./FacetSelector";
 
-/**
- * What behaviour do i strive for?
- * the autocomplete is sort of a headache. it is always unclear how to handle overflows with popups.
- * Moving selection and deselction into an apply area, will burden the servers less (than firering a query on every interaction)
- * paginate facets and search results.
- *
- * If something is selected then those and the top suggestions shows (as currently)
- * if the user deselects/selects something they need to apply the change.
- * If the user search for something then use the box itself to show the results. with pagination. Essentially a filtered search. Could be driven of the index to support counts.
- *
- * so searchbar
- * results - either: facets OR selected(+facets?) OR search results
- * when clicking/selecting/deselcting results then enter selection mode where there are checkboxes and an apply/cancel button.
- * paginate result list (both facets, selected and search results)
- *
- * options when creating: add search (only makes sense if many options) Allow negated? page size.
- * search should always be within what is in the subset of the index. hence ot makes beste sense to try to do it from the index itself.
- *
- * header props: title, menu component; api: actions (collapse e.g.)
- * actions (clear/all) + n selected + apply? + cancel?
- * search + options + pagination/more.
- *
- * list comp takes a list of options. and which are selected? Allows the user to change selection with callbacks that update the selected list. pagination. all. sorting. pagesize
- * selction comp: has search, ajax and list. has apply and cancel. defaults to showing top facets.
- *                can decide to paginate or show all (and reshuffle order)
- *
- */
 var styles = {
-  widgetSearch: {
+  search: {
     marginTop: 24,
+    marginBottom: 8,
     border: "1px solid #eee",
     borderWidth: "1px 0",
-    position: "relative",
-    "& input": {
-      border: "1px solid transparent",
-      display: "block",
-      width: "100%",
-      padding: "12px 60px 12px 24px",
-      fontSize: 14,
-      fallbacks: [{
-        border: "none"
-      }],
-      borderWidth: "1px 0"
-    },
-    "& input:focus": {
+    position: "relative"
+  },
+  input: {
+    border: "1px solid transparent",
+    display: "block",
+    width: "100%",
+    padding: "12px 60px 12px 24px",
+    fontSize: 14,
+    fallbacks: [{
+      border: "none"
+    }],
+    borderWidth: "1px 0",
+    "&:focus": {
       outline: "none",
       background: "#fbfbfb",
       borderBottomColor: "deepskyblue"
     }
+  },
+  noResults: {
+    fontSize: 12,
+    color: "#aaa",
+    padding: "12px 24px"
+  },
+  filterInfo: {
+    margin: '6px 24px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    fontSize: 10,
+    lineHeight: '14px',
+    '& >*': {
+      display: 'inline-block'
+    }
+  },
+  filterInfoText: {
+    textTransform: 'uppercase',
+    color: '#636d72'
+  },
+  filterAction: {
+    color: '#1785fb'
   }
 };
 
-function asArray(value) {
-  if (_.isUndefined(value)) {
-    return [];
-  } else if (_.isArray(value)) {
-    return value;
-  } else {
-    return [value];
-  }
-}
+var FacetOptions = function (_Component) {
+  _inherits(FacetOptions, _Component);
 
-function identity(props) {
-  return React.createElement(
-    "span",
-    null,
-    "TEST: ",
-    props.id
-  );
-}
-
-var FacetWidget = function (_Component) {
-  _inherits(FacetWidget, _Component);
-
-  function FacetWidget(props) {
-    _classCallCheck(this, FacetWidget);
+  function FacetOptions(props) {
+    _classCallCheck(this, FacetOptions);
 
     var _this = _possibleConstructorReturn(this, _Component.call(this, props));
 
-    _this.handleChange = _this.handleChange.bind(_this);
-    _this.updateFacets = _this.updateFacets.bind(_this);
-    _this.formatOption = _this.formatOption.bind(_this);
-    _this.onSelect = _this.onSelect.bind(_this);
+    _this.cancelPromises = _this.cancelPromises.bind(_this);
+    _this.handleInputChange = _this.handleInputChange.bind(_this);
+    _this.handleSelectChange = _this.handleSelectChange.bind(_this);
+    _this.onKeyDown = _this.onKeyDown.bind(_this);
+    _this.cancel = _this.cancel.bind(_this);
+    _this.apply = _this.apply.bind(_this);
+    _this.selectAll = _this.selectAll.bind(_this);
 
-    _this.state = _.merge({}, { value: "", expanded: true, displayName: identity }, _this.props.options);
+    _this.getFilterFacets = _this.getFilterFacets.bind(_this);
+    _this.getSearchResults = _this.getSearchResults.bind(_this);
+    _this.getItems = _this.getItems.bind(_this);
+
+    _this.filterConfig = _this.props.appSettings.filters[_this.props.filterID];
+
+    var fieldFilter = _.get(_this.props.filter, "query.must." + _this.props.filterID, []);
+
+    _this.state = {
+      hasSelectionChanged: false,
+      isDirty: false,
+      newSelected: fieldFilter,
+      selected: fieldFilter,
+      highlightIndex: undefined,
+      limit: 5,
+      collapsed: true,
+      value: "",
+      items: []
+    };
     return _this;
   }
 
-  FacetWidget.prototype.componentDidMount = function componentDidMount() {
-    this.updateFacets();
-    // OccurrenceStore.on('change', this.getOccurrences);
+  FacetOptions.prototype.componentDidMount = function componentDidMount() {
+    this._mounted = true;
+    this.getFilterFacets();
   };
 
-  FacetWidget.prototype.componentWillUnmount = function componentWillUnmount() {
-    // Cancel fetch
-    /*
-    Warning: Can't call setState (or forceUpdate) on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in the componentWillUnmount method.
-    in FreeText (at SearchBar.js:247)
-    in div (at ModalBlocker.js:13)
-    in div (at ModalBlocker.js:12)
-    in div (at ModalBlocker.js:10)
-    in Modal (at ModalBlocker.js:9)
-    in ModalBlocker (at SearchBar.js:246)
-    */
+  FacetOptions.prototype.componentWillUnmount = function componentWillUnmount() {
+    this.cancelPromises();
+    this._mounted = false;
   };
 
-  FacetWidget.prototype.componentDidUpdate = function componentDidUpdate(prevProps) {
+  FacetOptions.prototype.componentDidUpdate = function componentDidUpdate(prevProps) {
     if (prevProps.filter.hash !== this.props.filter.hash) {
-      this.updateFacets();
+      this.cancelPromises();
+      var fieldFilter = _.get(this.props.filter, "query.must." + this.props.filterID, []);
+      this.setState({ value: '', isDirty: false, hasSelectionChanged: false, selected: fieldFilter, newSelected: fieldFilter }, this.getFilterFacets);
     }
   };
 
-  FacetWidget.prototype.updateFacets = function updateFacets() {
+  FacetOptions.prototype.cancelPromises = function cancelPromises() {
+    if (this.facetPromise && typeof this.facetPromise.cancel === 'function') {
+      this.facetPromise.cancel();
+    }
+    if (this.searchPromise && typeof this.searchPromise.cancel === 'function') {
+      this.searchPromise.cancel();
+    }
+  };
+
+  /**
+   * get facets for filter, with a facetLimit equal to filter length or, if none selected, a fixed size (15)
+   */
+
+
+  FacetOptions.prototype.getFilterFacets = function getFilterFacets() {
     var _this2 = this;
 
-    return;
-    var esEndpoint = this.props.appSettings.esEndpoint;
+    // if nothing is selected then ask for a default limit of facets. else ask for selected facets only.
+    var limit = this.state.selected.length || this.state.limit;
 
-    var promises = [];
-    var filter = _.merge({}, this.props.filter.query);
-    var query = void 0,
-        queryFilter = void 0;
-    var must = _.get(this.props.filter, "query.must", {});
-
-    var esField = this.props.options.field;
-
-    if (must[this.props.options.field]) {
-      //let p1 = fetch('//api.gbif.org/v1/occurrence/search?' + queryString.stringify(filter, { indices: false, allowDots: true }));
-
-      queryFilter = this.props.appSettings.esRequest.build(this.props.filter.query);
-      query = {
-        size: 0,
-        aggs: {
-          facets: {
-            terms: { field: esField, size: 5 //burde egentlig være
-            } }
-        }
-      };
-      query = _.merge(query, queryFilter);
-      var p1 = axios.post(esEndpoint + "/_search", query);
-
-      promises.push(p1);
-      this.setState({ loading: true });
-      p1.then(function (result) {
-        _this2.setState({
-          facets: result.data.aggregations.facets.buckets,
-          count: result.data.hits.total
-        });
-      },
-      // Note: it's important to handle errors here
-      // instead of a catch() block so that we don't swallow
-      // exceptions from actual bugs in components.
-      function (error) {
-        _this2.setState({ error: true });
-      });
+    // should facets be shown when nothing is selected?
+    if (this.props.hideFacetsWhenAll && this.state.selected.length === 0) {
+      this.setState({ filteredItems: [], total: 0 });
+      return;
     }
 
-    if (this.props.options.showSuggestions) {
-      if (must[this.props.options.field]) {
-        delete filter.must[this.props.options.field];
-      }
-      // let p2 = fetch('//api.gbif.org/v1/occurrence/search?' + queryString.stringify(filter, { indices: false, allowDots: true }));
-
-      queryFilter = this.props.appSettings.esRequest.build(filter);
-      query = {
-        size: 0,
-        aggs: {
-          facets: {
-            terms: { field: esField, size: 20 }
+    // let DisplayFormater = this.props.appSettings.displayName(this.props.filterID).component;
+    var DisplayFormater = this.filterConfig.displayName;
+    var facetPromise = this.props.appSettings.search.facet(this.props.filter.query, this.filterConfig.mapping, limit);
+    this.facetPromise = facetPromise;
+    this.setState({ loadingFacets: true });
+    facetPromise.then(function (result) {
+      if (_this2._mounted) {
+        var results = result.results.map(function (e) {
+          return {
+            count: e.count,
+            value: React.createElement(DisplayFormater, { id: e.value }),
+            id: e.value
+          };
+        });
+        // Even if there is no results, then show the selected items with zero counts
+        for (var i = 0; i < _this2.state.selected.length; i++) {
+          var val = _this2.state.selected[i];
+          if (_.findIndex(results, { id: val }) === -1) {
+            results.push({
+              count: 0,
+              value: React.createElement(DisplayFormater, { id: val }),
+              id: val
+            });
           }
         }
-      };
-      query = _.merge(query, queryFilter);
-      var p2 = axios.post(esEndpoint + "/_search", query);
-
-      p2.then(function (result) {
-        _this2.setState({
-          multiFacets: result.data.aggregations.facets.buckets,
-          total: result.data.hits.total
-        });
-      },
-      // Note: it's important to handle errors here
-      // instead of a catch() block so that we don't swallow
-      // exceptions from actual bugs in components.
-      function (error) {
-        _this2.setState({ error: true });
-      });
-      promises.push(p2);
-    }
-
-    Promise.all(promises).then(function () {
-      _this2.setState({ loading: false });
-    }).catch(function () {
-      _this2.setState({ loading: false });
+        var items = _this2.getItems(results, _this2.state.selected);
+        var newState = { filteredItems: items, total: result.count, loadingFacets: false };
+        if (!_this2.state.isDirty) {
+          newState.items = _.cloneDeep(items);
+        }
+        _this2.setState(newState);
+      }
+    }, function (error) {
+      console.error(error);
+      if (_this2._mounted) {
+        _this2.setState({ error: true, loadingFacets: false });
+      }
     });
   };
 
-  FacetWidget.prototype.handleChange = function handleChange(event) {
-    this.setState({ value: event.target.value });
-  };
-
-  FacetWidget.prototype.formatOption = function formatOption(id, count, total, action, active) {
+  FacetOptions.prototype.getSearchResults = function getSearchResults() {
     var _this3 = this;
 
-    action = action || "ADD";
-    var Formater = this.state.displayName;
-    return React.createElement(
-      "li",
-      { key: id },
-      React.createElement(FacetItem, {
-        value: React.createElement(Formater, { id: id }),
-        count: count,
-        total: total,
-        active: active,
-        showSelectBox: false,
-        selected: false,
-        onChange: function onChange() {
-          return _this3.props.updateFilter({
-            key: _this3.props.options.field,
-            value: id,
-            action: action
-          });
-        }
-      })
-    );
-  };
-
-  FacetWidget.prototype.onSelect = function onSelect(val) {
-    console.log("selected", val);
-    this.setState({ value: "" });
-    this.props.updateFilter({
-      key: this.props.options.field,
-      value: val,
-      action: "ADD"
+    this.setState({ showSearchResults: true });
+    var DisplayFormater = this.filterConfig.displayName;;
+    //remove filter for this field (to give results other than the already selected) aka multiselect
+    var filter = _.clone(this.props.filter.query);
+    _.unset(filter, "must." + this.props.filterID);
+    var searchPromise = this.props.appSettings.suggest[this.props.suggestID].query(this.state.value, this.props.filter.query, this.state.limit);
+    this.searchPromise = searchPromise;
+    this.setState({ loadingSuggestions: true });
+    searchPromise.then(function (result) {
+      if (_this3._mounted) {
+        var results = result.results.map(function (e) {
+          return {
+            count: e.count,
+            value: React.createElement(DisplayFormater, { id: e.value }),
+            id: e.value
+          };
+        });
+        var items = _this3.getItems(results, _this3.state.newSelected);
+        _this3.setState({ items: items, searchTotal: result.count, isDirty: true, loadingSuggestions: false });
+      }
+    }, function (error) {
+      console.error(error);
+      if (_this3._mounted) {
+        _this3.setState({ error: true, loadingSuggestions: false });
+      }
     });
   };
 
-  FacetWidget.prototype.render = function render() {
-    var _this4 = this;
-
-    var props = this.props;
-    var count = this.state.count;
-    var total = this.state.total;
-    var formatOption = this.formatOption;
-
-    var must = _.get(this.props.filter, "query.must", {});
-    var facets = asArray(this.state.facets);
-    var selectedValues = asArray(must[this.props.options.field]);
-    if (facets.length > 0) {
-      facets = _.keyBy(facets, "key");
-    }
-    selectedValues = selectedValues.map(function (e) {
-      return formatOption(e, _.get(facets, e + ".doc_count"), count, "REMOVE", true);
-    });
-    var multiFacets = asArray(this.state.multiFacets);
-    _.remove(multiFacets, function (e) {
-      return asArray(must[props.options.field]).indexOf(e.key) !== -1;
-    });
-    multiFacets = multiFacets.map(function (e) {
-      return formatOption(e.key, e.doc_count, total, "ADD", selectedValues.length === 0);
-    });
-    var selectedCount = asArray(must[this.props.options.field]).length;
-
-    var searchBlock = "";
-    if (this.state.expanded && this.props.options.search !== false) {
-      searchBlock = React.createElement(
-        "div",
-        { className: this.props.classes.widgetSearch },
-        React.createElement(Suggest, {
-          endpoint: this.props.options.autoComplete.endpoint,
-          onSelect: this.onSelect,
-          value: this.state.value,
-          itemKey: this.props.options.autoComplete.key,
-          itemTitle: this.props.options.autoComplete.title,
-          itemDescription: this.props.options.autoComplete.description,
-          renderItem: this.props.options.autoComplete.renderItem
-        })
-      );
-    }
-
-    var Formater = this.state.displayName;
-    var items = asArray(this.state.multiFacets).map(function (e) {
+  FacetOptions.prototype.getItems = function getItems(list, selected) {
+    var selectedMap = _.keyBy(selected, _.identity);
+    var items = list.map(function (e) {
       return {
-        id: e.key,
-        count: e.doc_count,
-        value: React.createElement(Formater, { id: e.key }),
-        selected: true
+        count: e.count,
+        value: e.value,
+        id: e.id,
+        selected: Boolean(selectedMap[e.id])
       };
     });
+    return items;
+  };
+
+  FacetOptions.prototype.updateSelection = function updateSelection(items, selected) {
+    var selectedMap = _.keyBy(selected, _.identity);
+    items.forEach(function (e) {
+      e.selected = typeof selectedMap[e.id] !== 'undefined';
+    });
+    return items;
+  };
+
+  FacetOptions.prototype.handleInputChange = function handleInputChange(event) {
+    this.setState({ value: event.target.value, isDirty: true, highlightIndex: undefined }, this.getSearchResults);
+  };
+
+  FacetOptions.prototype.cancel = function cancel() {
+    this.setState({
+      isDirty: false,
+      hasSelectionChanged: false,
+      newSelected: this.state.selected,
+      items: _.cloneDeep(this.state.filteredItems),
+      value: '',
+      highlightIndex: undefined
+    });
+  };
+
+  FacetOptions.prototype.apply = function apply() {
+    this.props.updateFilter({
+      key: this.props.filterID,
+      action: 'UPDATE',
+      value: this.state.newSelected
+    });
+  };
+
+  FacetOptions.prototype.selectAll = function selectAll() {
+    this.props.updateFilter({
+      key: this.props.filterID,
+      action: 'CLEAR'
+    });
+  };
+
+  FacetOptions.prototype.onKeyDown = function onKeyDown(event) {
+    if (event.key === 'Enter' && typeof this.state.highlightIndex !== 'undefined') {
+      this.handleSelectChange(this.state.items[this.state.highlightIndex]);
+    } else if (event.key === 'Enter' && !this.state.isDirty) {
+      this.getSearchResults();
+    } else if (event.key === 'Escape') {
+      var newState = { highlightIndex: undefined, isDirty: this.state.value !== '' || this.state.hasSelectionChanged };
+      this.setState(newState);
+    } else if (event.key === 'ArrowDown') {
+      var direction = 1;
+      var highlightIndex = typeof this.state.highlightIndex === 'undefined' ? 0 : this.state.highlightIndex + direction;
+      highlightIndex = highlightIndex >= this.state.items.length ? 0 : highlightIndex;
+      this.setState({ highlightIndex: highlightIndex });
+    } else if (event.key === 'ArrowUp') {
+      var _direction = -1;
+      var _highlightIndex = typeof this.state.highlightIndex === 'undefined' ? this.state.items.length - 1 : this.state.highlightIndex + _direction;
+      _highlightIndex = _highlightIndex < 0 ? this.state.items.length - 1 : _highlightIndex;
+      this.setState({ highlightIndex: _highlightIndex });
+    }
+  };
+
+  FacetOptions.prototype.handleSelectChange = function handleSelectChange(item) {
+    var newSelected = void 0;
+
+    //if a selected item is clicked then remove it from selection
+    if (item.selected) {
+      newSelected = _.difference(this.state.newSelected, [item.id]);
+    } else {
+      //if a unchecked item is clicked then add it to selection
+      newSelected = _.union(this.state.newSelected, [item.id]);
+    }
+    //update which items are selected
+    var items = this.updateSelection(this.state.items, newSelected);
+    // this.updateSelection(this.state.items, newSelected);
+    var hasSelectionChanged = !_.isEqual(this.state.selected.sort(), newSelected.sort());
+    this.setState({
+      items: items,
+      newSelected: newSelected,
+      hasSelectionChanged: hasSelectionChanged,
+      isDirty: true,
+      highlightIndex: undefined
+    });
+  };
+
+  FacetOptions.prototype.render = function render() {
+    var classes = this.props.classes;
+
+    var isDirty = this.state.isDirty;
+    var hasSelectionChanged = this.state.hasSelectionChanged;
+    var items = isDirty ? this.state.items || [] : this.state.filteredItems || [];
+    var showNoResults = !this.props.hideFacetsWhenAll || this.state.filteredItems && this.state.filteredItems.length > 0;
+
     return React.createElement(
-      StateContext.Consumer,
+      WidgetContainer,
       null,
-      function (_ref) {
-        var api = _ref.api;
-        return React.createElement(
-          WidgetContainer,
+      React.createElement(LoadBar, { active: this.state.loadingFacets || this.state.loadingSuggestions || this.state.error, error: this.state.error }),
+      React.createElement(
+        "div",
+        { className: "filter__content" },
+        React.createElement(
+          WidgetHeader,
           null,
-          _this4.state.loading && React.createElement(LoadBar, null),
+          this.props.title
+        ),
+        React.createElement(
+          "div",
+          null,
           React.createElement(
             "div",
-            { className: "filter__content" },
-            React.createElement(
-              WidgetHeader,
+            { className: classes.search },
+            React.createElement("input", {
+              type: "text",
+              placeholder: "Search",
+              className: classes.input,
+              value: this.state.value,
+              onChange: this.handleInputChange,
+              onKeyDown: this.onKeyDown
+            })
+          ),
+          React.createElement(
+            "div",
+            { className: classes.filterInfo },
+            this.state.newSelected.length > 0 && React.createElement(
+              "span",
               null,
-              _this4.props.options.field
+              this.state.newSelected.length,
+              " selected"
             ),
-            false && React.createElement(
-              "div",
-              { className: "filter__info" },
-              React.createElement(
-                "dl",
-                { className: "u-secondaryTextColor u-upperCase u-small" },
-                React.createElement(
-                  "dt",
-                  null,
-                  "1.302"
-                ),
-                React.createElement(
-                  "dd",
-                  null,
-                  "Datasets"
-                ),
-                React.createElement(
-                  "dt",
-                  null,
-                  "26"
-                ),
-                React.createElement(
-                  "dd",
-                  null,
-                  "in view"
-                )
-              )
+            this.state.newSelected.length === 0 && !this.props.hideFacetsWhenAll && React.createElement(
+              "span",
+              null,
+              "All selected"
             ),
-            React.createElement(FacetSelector, { searchable: _this4.props.options.search, field: _this4.props.options.field, textField: _this4.props.options.displayField, displayFormater: _this4.state.displayName }),
-            React.createElement(FacetList, { showCheckbox: true, totalCount: total, items: items })
+            !hasSelectionChanged && this.state.selected.length > 0 && React.createElement(
+              "span",
+              { className: classes.filterAction, onClick: this.selectAll, role: "button" },
+              "Select all"
+            )
+          ),
+          React.createElement(FacetList, {
+            showCheckbox: isDirty,
+            showAllAsSelected: !isDirty && this.state.newSelected.length === 0,
+            totalCount: this.state.total || 0,
+            items: items || [],
+            highlightIndex: this.state.highlightIndex,
+            onChange: this.handleSelectChange
+          }),
+          showNoResults && items.length === 0 && React.createElement(
+            "div",
+            { className: classes.noResults },
+            "No results found - try to loosen your filters"
+          ),
+          isDirty && React.createElement(
+            "div",
+            { className: classes.filterInfo },
+            React.createElement(
+              "a",
+              { className: classes.filterAction, role: "button", onClick: this.cancel },
+              "Cancel"
+            ),
+            hasSelectionChanged && React.createElement(
+              "a",
+              { className: classes.filterAction, onClick: this.apply, role: "button" },
+              "Apply"
+            )
           )
-        );
-      }
+        )
+      )
     );
   };
 
-  return FacetWidget;
+  return FacetOptions;
 }(Component);
 
-var hocWidget = function hocWidget(props) {
-  return React.createElement(
-    StateContext.Consumer,
-    null,
-    function (_ref2) {
-      var appSettings = _ref2.appSettings;
+export default injectSheet(styles)(FacetOptions);
 
-      return React.createElement(FacetWidget, _extends({}, props, { appSettings: appSettings }));
-    }
-  );
-};
-
-export default injectSheet(styles)(hocWidget);
+/**
+ * er blevet uoverskuelig stor.
+ * split ud i dele.
+ * 
+ * onFilterUpdate: refresh state?
+ * 
+ * data handler component? fetches data
+ * <presentational original selected options>
+ * originalSelected, newSelected, items (selectedBool)
+ * widget
+ *  header
+ *  searchbar
+ *    changes dirty, triggers search, updates items
+ *  items ()
+ */

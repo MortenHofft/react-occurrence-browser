@@ -17,7 +17,7 @@ import Layout from './components/layout/Layout';
 import history from './history';
 import StateContext from './StateContext';
 import stateHelper from './stateHelper';
-import configBuilder from './configBuilder';
+import configBuilder from './config/configBuilder';
 import OmniSearch from './components/omniSearch/OmniSearch';
 import WidgetDrawer from './components/widgetDrawer/WidgetDrawer';
 import styles from './indexStyle';
@@ -34,11 +34,14 @@ var OccurrenceSearch = function (_Component) {
     _this.handleKeyPress = _this.handleKeyPress.bind(_this);
     _this.updateFilter = _this.updateFilter.bind(_this);
     _this.updateStateQuery = _this.updateStateQuery.bind(_this);
+    _this.setQuery = _this.setQuery.bind(_this);
     _this.updateView = _this.updateView.bind(_this);
     _this.updateWidgets = _this.updateWidgets.bind(_this);
     _this.hasWidget = _this.hasWidget.bind(_this);
+    _this.setOpenMenu = _this.setOpenMenu.bind(_this);
+    _this.toggleWidgets = _this.toggleWidgets.bind(_this);
 
-    var appSettings = configBuilder({ esEndpoint: _this.props.endpoint });
+    var appSettings = configBuilder(_this.props.config);
 
     var query = { must: {}, must_not: {} };
 
@@ -53,17 +56,31 @@ var OccurrenceSearch = function (_Component) {
 
     _this.state = {
       value: '',
-      activeView: 'GALLERY',
+      activeView: 'TABLE',
       api: {
         updateFilter: _this.updateFilter,
+        setQuery: _this.setQuery,
         updateWidgets: _this.updateWidgets,
-        hasWidget: _this.hasWidget
+        hasWidget: _this.hasWidget,
+        toggleWidgets: _this.toggleWidgets,
+        setOpenMenu: _this.setOpenMenu
       },
+      openMenu: undefined,
+      showWidgets: true,
       appSettings: appSettings,
-      filter: { query: query, hash: objectHash(query) }
+      filter: { query: query, hash: objectHash(query) },
+      appRef: React.createRef()
     };
     return _this;
   }
+
+  OccurrenceSearch.prototype.toggleWidgets = function toggleWidgets() {
+    this.setState({ showWidgets: !this.state.showWidgets });
+  };
+
+  OccurrenceSearch.prototype.setOpenMenu = function setOpenMenu(menuId) {
+    this.setState({ openMenu: menuId });
+  };
 
   OccurrenceSearch.prototype.updateWidgets = function updateWidgets(field, action) {
     var widgets = [];
@@ -113,6 +130,18 @@ var OccurrenceSearch = function (_Component) {
     }
   };
 
+  OccurrenceSearch.prototype.setQuery = function setQuery(query) {
+    if (this.props.config.mapStateToUrl) {
+      if (stateHelper.isEmptyQuery(query)) {
+        history.push(window.location.pathname);
+      } else {
+        history.push(window.location.pathname + '?filter=' + stateHelper.getFilterAsURICompoment(query));
+      }
+    } else {
+      this.updateStateQuery(query);
+    }
+  };
+
   OccurrenceSearch.prototype.updateView = function updateView(selected) {
     this.setState({ activeView: selected });
   };
@@ -123,15 +152,15 @@ var OccurrenceSearch = function (_Component) {
       { value: this.state },
       React.createElement(
         "div",
-        { className: this.props.classes.occurrenceSearch },
+        { className: this.props.classes.occurrenceSearch, ref: this.state.appRef },
         React.createElement(Layout, {
           activeView: this.state.activeView,
           omniSearch: React.createElement(OmniSearch, { filter: this.state.filter, updateFilter: this.state.api.updateFilter }),
           filterSummary: React.createElement(FilterSummary, { displayName: this.state.appSettings.displayName, filter: this.state.filter, updateFilter: this.state.api.updateFilter }),
           widgetDrawer: React.createElement(WidgetDrawer, { displayName: this.state.appSettings.displayName, filter: this.state.filter, updateFilter: this.state.api.updateFilter }),
-          table: React.createElement(Table, { filter: this.state.filter, endpoint: this.props.endpoint, config: this.props.config, displayName: this.state.appSettings.displayName }),
-          map: React.createElement(Map, { filter: this.state.filter, endpoint: this.props.endpoint, config: this.props.config, displayName: this.state.appSettings.displayName }),
-          gallery: React.createElement(Gallery, { filter: this.state.filter, endpoint: this.props.endpoint, config: this.props.config, displayName: this.state.appSettings.displayName }),
+          table: React.createElement(Table, { filter: this.state.filter, config: this.props.config, displayName: this.state.appSettings.displayName }),
+          map: React.createElement(Map, { filter: this.state.filter }),
+          gallery: React.createElement(Gallery, { filter: this.state.filter }),
           viewSelector: React.createElement(ViewSelector, { active: this.state.activeView, updateView: this.updateView })
         })
       )
