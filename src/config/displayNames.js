@@ -26,14 +26,14 @@ let displayName = [
         .then(result => ({title: result.data.title}))
   },
   {
-    name: 'taxonKey',
+    name: 'taxon',
     format: id => axios
         .get(endpoints.species + "/" + id)
         .then(result => ({ title: result.data.scientificName }))
   },
   {
     name: 'basisOfRecord',
-    format: id => ({title: id.toLowerCase().replace("_", " ")})
+    format: id => ({title: (id + '').toLowerCase().replace("_", " ")})
   },
   {
     name: 'year',

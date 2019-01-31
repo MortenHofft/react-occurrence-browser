@@ -44,7 +44,8 @@ function EsRequest(esEndpoint, filters) {
       builder.filter('terms', esField, [].concat(value));
     });
     if (_.isString(query.freetext) && query.freetext !== '') {
-      builder.query('match', 'freetext', query.freetext);
+      //builder.query('match', 'all', query.freetext);
+      builder.query('query_string', 'query', query.freetext);//tmp
     }
     if (_.isString(query.q) && query.q !== '') {
       builder.query('query_string', 'query', query.q);

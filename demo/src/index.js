@@ -7,8 +7,8 @@ import axios from 'axios';
 import OccurrenceBrowser from '../../src'
 
 const style = {
-  height: 'calc(100vh - 80px)',
-  width: '95%'
+  height: '100vh',//'calc(100vh - 80px)',
+  //width: '95%'
 };
 
 class Demo extends Component {
