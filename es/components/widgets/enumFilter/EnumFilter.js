@@ -184,12 +184,7 @@ var EnumFilter = function (_Component) {
             totalCount: this.state.total || 0,
             items: this.state.items || [],
             onChange: this.handleSelectChange
-          }),
-          React.createElement(
-            "pre",
-            { style: { fontSize: "10px" } },
-            JSON.stringify(this.state, null, 2)
-          )
+          })
         )
       )
     );

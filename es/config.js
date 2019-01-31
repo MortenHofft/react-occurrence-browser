@@ -5,7 +5,7 @@ var suggest = {
         key: 'key',
         title: 'title'
     },
-    taxonKey: {
+    taxon: {
         type: 'KEY',
         endpoint: '//api.gbif.org/v1/species/suggest',
         key: 'key',

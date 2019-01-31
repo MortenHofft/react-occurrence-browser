@@ -28,7 +28,7 @@ var displayName = [{
     });
   }
 }, {
-  name: 'taxonKey',
+  name: 'taxon',
   format: function format(id) {
     return axios.get(endpoints.species + "/" + id).then(function (result) {
       return { title: result.data.scientificName };
@@ -37,7 +37,7 @@ var displayName = [{
 }, {
   name: 'basisOfRecord',
   format: function format(id) {
-    return { title: id.toLowerCase().replace("_", " ") };
+    return { title: (id + '').toLowerCase().replace("_", " ") };
   }
 }, {
   name: 'year',

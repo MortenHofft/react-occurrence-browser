@@ -49,7 +49,7 @@ var stdFilters = [{
   txName: 'tx.filters.taxon',
   txDescription: 'tx.filters.taxonDescription',
   mapping: 'backbone.taxonKey',
-  displayName: displayNames('taxonKey').component
+  displayName: displayNames('taxon').component
 }];
 
 stdFilters = _.keyBy(stdFilters, 'name');

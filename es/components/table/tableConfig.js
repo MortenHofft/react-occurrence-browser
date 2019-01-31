@@ -1,7 +1,7 @@
 export default {
   fields: [{
-    name: 'scientificName',
-    filter: 'taxonKey',
+    name: 'gbifScientificName',
+    filter: 'gbifTaxonKey',
     width: 200
   }, {
     name: 'countryCode',

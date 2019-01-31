@@ -5,15 +5,15 @@ import FacetWidget from "../FacetWidget";
 import EnumFilter from "../enumFilter/EnumFilter";
 
 export default {
-  basisOfRecord: {
-    name: "basisOfRecord",
-    type: "FILTER",
-    title: "Basis of record",
-    description: "tx.path.description",
-    component: function component(props) {
-      return React.createElement(EnumFilter, _extends({}, props, { filterID: "basisOfRecord", suggestID: "basisOfRecord", title: "Basis of record", description: "what is the evidence for the occurrence" }));
-    }
-  },
+  // basisOfRecord: {
+  //   name: "basisOfRecord",
+  //   type: "FILTER",
+  //   title: "Basis of record",
+  //   description: "tx.path.description",
+  //   component: props => (
+  //     <EnumFilter {...props} filterID="basisOfRecord" suggestID="basisOfRecord" title="Basis of record" description="what is the evidence for the occurrence"/>
+  //   )
+  // },
   dataset: {
     name: "dataset",
     type: "FILTER",
@@ -22,30 +22,31 @@ export default {
     component: function component(props) {
       return React.createElement(FacetWidget, _extends({}, props, { filterID: "dataset", suggestID: "dataset", title: "Dataset", description: "What dataset should the occurrences come from" }));
     }
-  },
-  recordedBy: {
-    name: "recordedBy",
-    type: "FILTER",
-    title: "Recorder name",
-    description: "tx.path.description",
-    component: function component(props) {
-      return React.createElement(FacetWidget, _extends({}, props, {
-        filterID: "recordedBy",
-        hideFacetsWhenAll: true,
-        suggestID: "recordedBy",
-        title: "Recorded by", description: "what is the name of the person who made the observation"
-      }));
-    }
-  },
-  substrate: {
-    name: "substrate",
-    type: "FILTER",
-    title: "Substrate",
-    description: "tx.path.description",
-    component: function component(props) {
-      return React.createElement(FacetWidget, _extends({}, props, { filterID: "Substrate", suggestID: "Substrate", title: "Substrate", description: "What should the organism grow on" }));
-    }
   }
+  // recordedBy: {
+  //   name: "recordedBy",
+  //   type: "FILTER",
+  //   title: "Recorder name",
+  //   description: "tx.path.description",
+  //   component: props => (
+  //     <FacetWidget
+  //       {...props}
+  //       filterID="recordedBy"
+  //       hideFacetsWhenAll={true}
+  //       suggestID="recordedBy"
+  //       title="Recorded by" description="what is the name of the person who made the observation"
+  //     />
+  //   )
+  // },
+  // substrate: {
+  //   name: "substrate",
+  //   type: "FILTER",
+  //   title: "Substrate",
+  //   description: "tx.path.description",
+  //   component: props => (
+  //     <FacetWidget {...props} filterID="Substrate" suggestID="Substrate" title="Substrate" description="What should the organism grow on" />
+  //   )
+  // }
 };
 
 /*
