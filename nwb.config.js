@@ -5,7 +5,7 @@ module.exports = {
     umd: {
       global: 'ReactOccurrenceBrowser',
       externals: {
-        
+        'react': 'React'
       }
     }
   },
